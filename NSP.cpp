@@ -1,4 +1,3 @@
-// Arquivo Responsável pela leitura dos arquivos do problema
 #include "NSP.h"
 
 int num_enfermeiros; // variavel global, número de enfermeiros da instancia
@@ -6,7 +5,7 @@ int num_enfermeiros; // variavel global, número de enfermeiros da instancia
 
 
 
-vector<double> retornar_pares_double(string palavra) // elimina () e , de uma palavra
+vector<double> retornar_pares_double(string palavra)
 {
 	vector<double> conversao;
 	conversao = vector<double>(2);
@@ -39,11 +38,11 @@ Cenario::Cenario(string nomeArq) : nomeArq(nomeArq)
 	//abrir o arquivo
 	f = ifstream(nomeArq);
 
-	//verificar se o arquivo foi aberto com sucesso
+	//verificar se o arquivo
 	if (!f.is_open())
 		cout << "Erro ao abrir o arquivo!!!!  cenario" << endl;
 
-	
+	//ler até chegar onde se deseja
 	while (!f.eof())
 	{
 		f >> s;
@@ -75,8 +74,8 @@ Cenario::Cenario(string nomeArq) : nomeArq(nomeArq)
 				vetor_sucessoes[i].x.second = aux[1];
 			}	
 		}
-												  
-		if (s == "FORBIDDEN_SHIFT_TYPES_SUCCESSIONS") // inicia a leitura das sucessoes de sucessões proibidas
+												  //enquanto end of file for false continua											  // pulando até chegar onde se deseja;
+		if (s == "FORBIDDEN_SHIFT_TYPES_SUCCESSIONS") // inicia a leitura das sucessoes de ss proibidos
 		{
 			vetor_turnos = vector<string>(5);
 			vetor_turnos[0] = "None";
@@ -124,7 +123,7 @@ Cenario::Cenario(string nomeArq) : nomeArq(nomeArq)
 		}
 		cout << endl;
 	}
-	 // fim da sucessao de turnos proibidos
+	 // fim da sucessao de ss proibidos
 
 		if (s == "CONTRACTS")
 		{
@@ -205,18 +204,18 @@ Week::Week(string nomeArq) : nomeArq(nomeArq)
 {
 	w = ifstream(nomeArq);
 
-	//verificar se o arquivo foi aberto com sucesso
+	//verificar se o arquivo
 	if (!w.is_open())
 		cout << "Erro ao abrir o arquivo! week" << endl;
 
-	
+	//ler até chegar onde se deseja
 	while (!w.eof())
-	{			
-		w >> s; 
+	{			//enquanto end of file for false continua
+		w >> s; // pulando até chegar onde se deseja;
 		if (s == "REQUIREMENTS")
 		{
 			matriz_requerimentos = vector<vector<pair<int,int>>>(16,vector<pair<int,int>>(7));
-			for (int i = 0; i < 16; i++) 
+			for (int i = 0; i < 16; i++) // preencher matriz de requerimentos minimo e ótimo
 			{
 				w >> s;
 				w >> s;
@@ -299,7 +298,7 @@ History::History(string nomeArq) : nomeArq(nomeArq)
 {
 	h = ifstream(nomeArq);
 
-	
+	//verificar se o arquivo
 	if (!h.is_open())
 		cout << "Erro ao abrir o arquivo! history" << endl;
 
@@ -307,13 +306,13 @@ History::History(string nomeArq) : nomeArq(nomeArq)
 	matriz_borda_fracas = vector<vector<int>>(num_enfermeiros, vector<int>(5));
 
 	while (!h.eof())
-	{			
-		h >> s; 
+	{			//enquanto end of file for false continua
+		h >> s; // pulando até chegar onde se deseja;
 		if (s == "NURSE_HISTORY")
 		{
 			for (int i = 0; i < num_enfermeiros; i++)
 			{
-				int count = 0; 
+				int count = 0; // variavel para forçar a posição da matriz
 				for (int j = 0; j < 7; j++)
 				{
 					if (j == 0)
@@ -383,11 +382,14 @@ int retornar_enfermeiro(string palavra)
 
 Custom::Custom(string nomeArq) : nomeArq(nomeArq)
 {
-	
+	//abrir o arquivo
+
+	//string aux = ".txt";
+	//nomeArq = nomeArq + aux;
 	cust = ifstream(nomeArq);
 	cout << nomeArq << endl;
 
-	
+	//verificar se o arquivo
 	if (!cust.is_open())
 		cout << "Erro ao abrir o Custom!!!! Custom" << endl;
 
@@ -401,6 +403,11 @@ Custom::Custom(string nomeArq) : nomeArq(nomeArq)
 		cust >> dias_trabalhados[i].second;
 		cout << dias_trabalhados[i].second << endl;
 	}
+	//cout << "chegou" << endl;
+	//cust >> n;
+	//dias_trabalhados[i] = n;
+	//cout << "dias trabalhados:" << dias_trabalhados[i] << endl;
+	//i++;
 }
 
 Custom::~Custom()

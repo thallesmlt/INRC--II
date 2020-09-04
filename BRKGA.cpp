@@ -1,7 +1,7 @@
-    #include "BRKGA.h"
+#include "BRKGA.h"
 #include <algorithm>
 
-BRKGA::BRKGA(int TAM_POPULACAO, int NUM_GERACOES, double TAM_ELITISTA, double TAM_MUTANTE, double PROB_CRUZAMENTO, vector<string> names, string cusin, int iteracoes_max, MTRand mtrand)
+BRKGA::BRKGA(int TAM_POPULACAO, int NUM_GERACOES, double TAM_ELITISTA, double TAM_MUTANTE, double PROB_CRUZAMENTO, vector<string> names, string cusin, int iteracoes_max, MTRand mtrand, double tempo)
 {
     cout << endl;
     cout << "cenario:" << names[0] << endl;
@@ -42,8 +42,60 @@ BRKGA::BRKGA(int TAM_POPULACAO, int NUM_GERACOES, double TAM_ELITISTA, double TA
     cout << tam_cruzamento << endl;
     cout << tam_nao_elitista << endl;
     this->temp = temp;
-    multi_start(iteracoes_max); // execução Do Ag e busca local
+    this->tempo = tempo;
+    //ciclo_evolutivo();
+    //brincadeira();
+    //cout << endl;
+    //solucao_gulosa();
+    //cout << endl;
+    //solucao_gulosa_2();
+    //cout << endl;
 
+    multi_start(iteracoes_max, tempo);
+    //ciclo_evolutivo_ponderado();
+    /*int aux = 0;
+    individuo_codificado = criar_individuo();
+    //print_individuo(individuo_codificado);
+    individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
+    individuo_decodificado = decodificar_individuo_2(individuo_codificado);
+    print_decodificado(individuo_decodificado);
+    aux = funcao_avaliacao_2(individuo_decodificado);
+    cout << aux << endl;
+   // aux = funcao_avaliacao(individuo_decodificado);
+   // cout << aux << endl;
+    cout << endl;
+    //individuo_decodificado = procura_melhor_vizinho(individuo_decodificado);
+    individuo_decodificado = primeira_melhora(individuo_decodificado);
+     for (int j = 0; j < 3; j++)
+        {
+            //cout << "chegou" << endl;
+            
+            individuo_decodificado = trocar_qualificacao_turno(individuo_decodificado);
+            
+            aux = funcao_avaliacao_minimo_completa(individuo_decodificado);
+            //cout << aux << endl;
+            // cout << "deu ruim" << endl;
+            if (aux == 0)
+            {
+                j = 3;
+            }
+        }
+    individuo_decodificado = primeira_melhora(individuo_decodificado);
+    //individuo_decodificado = primeira_melhora(individuo_decodificado);
+    print_decodificado(individuo_decodificado);
+    aux = funcao_avaliacao_2(individuo_decodificado);
+    // porcentagem_contratos();
+    // individuo_codificado = codificador_2(individuo_decodificado);
+    // individuo_decodificado = decodificar_individuo_2(individuo_codificado);
+    // print_decodificado(individuo_decodificado);
+    //  aux = funcao_avaliacao_2(individuo_decodificado);
+    cout << aux << endl;
+
+    //cout << endl;
+    //print_decodificado(individuo_decodificado);
+    //aux = funcao_avaliacao_2(individuo_decodificado);
+    //cout << "Custo = " << aux << endl;
+    //cout << "chegou" << endl;*/
 }
 BRKGA::~BRKGA()
 {
@@ -58,7 +110,7 @@ double BRKGA::randzero()
     return mt.rand();
 }
 
-void BRKGA::matriz_compatibilidades() // cria conjuntos de enfermeiros compativeis 
+void BRKGA::matriz_compatibilidades() // cria conjuntos de enfermeiros compativeis
 {
     int tamanho = 0;
     int count = 0;
@@ -76,12 +128,12 @@ void BRKGA::matriz_compatibilidades() // cria conjuntos de enfermeiros compative
         {
             tamanho++;
             vetor_compatibilidade_aux[num_vetor_compatibilidade].compatibilidade.push_back(i);
-            
+
             aux++;
         }
         else
         {
-            
+
             if (cn->vetor_qualificacao[vetor_compatibilidade_aux[num_vetor_compatibilidade].compatibilidade[aux - 1]].num_funcoes == cn->vetor_qualificacao[i].num_funcoes)
             {
 
@@ -123,9 +175,7 @@ void BRKGA::matriz_compatibilidades() // cria conjuntos de enfermeiros compative
         }
     }
 
-    
     vetor_compatibilidade = vector<Vetor_compatibilidade>(tamanho);
-    
 
     for (int i = 0; i < tamanho; i++)
     {
@@ -136,7 +186,6 @@ void BRKGA::matriz_compatibilidades() // cria conjuntos de enfermeiros compative
 vector<vector<pair<double, double>>> BRKGA::criar_individuo() // cria uma solução representada por chaves aleatórias
 {
     individuo_codificado = vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7));
-
 
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
@@ -598,9 +647,8 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
         {
             aux = custom_out[h] - '0';
             aux = cn->num_semanas - aux;
-            
         }
-    } 
+    }
 
     // restricoes s2 e s3 ---- s2-peso 30 resolvida ---- s3 peso 30 a ser resolvida
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
@@ -670,10 +718,10 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
                 {
                     for (int h = 0; h < cn->vetor_contratos.size(); h++)
                     {
-                       
+
                         if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                         {
-                    
+
                             if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
                             {
                                 dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
@@ -876,7 +924,6 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
         count_folgas = 0;
         count_turnos = 0;
         turno_anterior.erase();
-        
 
         //restriçao s6
         if (semana_1 == 0)
@@ -894,7 +941,6 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
                         }
                     }
 
-                    
                     int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
                     int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux));
 
@@ -945,7 +991,7 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
                 }
             }
         }
-        
+
         count_dias_trabalhados = 0;
     }
 
@@ -1108,22 +1154,21 @@ int BRKGA::funcao_avaliacao(vector<vector<pair<string, string>>> &individuo_deco
     dias_consecutivos = (dias_consecutivos * 30);
     dias_folgas = (dias_folgas * 30);
     turnos_consecutivos = (turnos_consecutivos * 15);
-    if (aux <= cn->num_semanas/2) // antes da metade do horizonte de planejamenti
+    if (aux <= cn->num_semanas / 2) // antes da metade do horizonte de planejamenti
     {
         sucessoes = (sucessoes * 60);
         requerimento_minimo = (requerimento_minimo * 60);
-        s7 = (s7 *45);
-        dias_global = (dias_global * 20);
-    }
-    else{ // depois da metade do horizonte de planejamento
-        sucessoes = (sucessoes * 60);
-    requerimento_minimo = (requerimento_minimo * 60);
         s7 = (s7 * 30);
         dias_global = (dias_global * 20);
     }
-         
+    else
+    { // depois da metade do horizonte de planejamento
+        sucessoes = (sucessoes * 60);
+        requerimento_minimo = (requerimento_minimo * 60);
+        s7 = (s7 * 30);
+        dias_global = (dias_global * 20);
+    }
 
-    
     custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
     return custo_total;
 }
@@ -1268,15 +1313,13 @@ void BRKGA::dividir_populacao(vector<vector<vector<pair<double, double>>>> &popu
 
     for (int j = 0; j < tam_elitista; j++)
     {
-        
+
         populacao_elitista[j] = populacao[ordenacao[j].second];
-      
     }
     for (int j = 0; j < tam_nao_elitista; j++)
     {
         populacao_nao_elitista[j] = populacao[ordenacao[j + tam_elitista].second];
     }
-    
 }
 
 void BRKGA::dividir_populacao_2(vector<vector<vector<pair<double, double>>>> &populacao)
@@ -1290,33 +1333,25 @@ void BRKGA::dividir_populacao_2(vector<vector<vector<pair<double, double>>>> &po
         sol = decodificar_individuo_ponderado_2(populacao[i]);
         ordenacao[i].first = funcao_avaliacao(sol);
         ordenacao[i].second = i;
-        
     }
     sort(ordenacao.begin(), ordenacao.end());
-    
- 
 
     for (int j = 0; j < tam_elitista; j++)
     {
         populacao_elitista[j] = populacao[ordenacao[j].second];
-
     }
-    
 
     for (int j = 0; j < populacao_nao_elitista.size(); j++)
     {
-        populacao_nao_elitista[j] = populacao[ordenacao[j+tam_elitista].second];
-
+        populacao_nao_elitista[j] = populacao[ordenacao[j + tam_elitista].second];
     }
 }
 
 vector<vector<pair<double, double>>> BRKGA::mutacao()
 {
-    
-    
+
     individuo_codificado = criar_individuo();
     return individuo_codificado;
-
 }
 
 void BRKGA::mutacao_vetor(int sem_melhora)
@@ -1342,59 +1377,60 @@ void BRKGA::mutacao_2_vetor(int sem_melhora, int iteracao)
         vetor_sorteio[i] = i;
     }
 
-   
     for (int i = 0; i < vetor_sorteio_2.size(); i++)
     {
         vetor_sorteio_2[i] = i;
     }
-    
 
     random_shuffle(vetor_sorteio.begin(), vetor_sorteio.end());
 
-    if(sem_melhora < 40 ){
+    if (sem_melhora < 40)
+    {
         constante = 1;
     }
-    if(sem_melhora >= 40 && sem_melhora < 120){
+    if (sem_melhora >= 40 && sem_melhora < 120)
+    {
         constante = 2;
     }
-    else{
-        constante = 2;  
+    else
+    {
+        constante = 2;
     }
-    if(sem_melhora % 60 == 0){
-        constante = cn->vetor_qualificacao.size()/2;
+    if (sem_melhora % 60 == 0)
+    {
+        constante = cn->vetor_qualificacao.size() / 2;
     }
-    
+
     int sorteio_tamanho;
     vetor_mutante = vector<vector<vector<pair<double, double>>>>(this->tam_mutante, vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7)));
-   
-    
+
     for (int i = 0; i < vetor_mutante.size(); i++)
     {
         random_shuffle(vetor_sorteio_2.begin(), vetor_sorteio_2.end());
         vetor_mutante[i] = populacao[vetor_sorteio[i]];
-       
+
         for (int j = 0; j < constante; j++)
         {
             sorteio = (mt.randInt() % 7);
-            
+
             vetor_mutante[i][vetor_sorteio_2[j]][sorteio].first = randzero();
             vetor_mutante[i][vetor_sorteio_2[j]][sorteio].second = randzero();
         }
     }
-    for(int j = 0; j < vetor_mutante.size();j++){
+    for (int j = 0; j < vetor_mutante.size(); j++)
+    {
         if (sem_melhora % 10 == 0 && sem_melhora < 40 /*&& iteracao > 1000*/)
         {
             vetor_mutante[j] = VND(vetor_mutante[j]);
         }
-        else{
-            if(sem_melhora % 10 == 0 && sem_melhora >= 40 /*&& iteracao > 1000*/){
+        else
+        {
+            if (sem_melhora % 10 == 0 && sem_melhora >= 40 /*&& iteracao > 1000*/)
+            {
                 vetor_mutante[j] = VND(vetor_mutante[j]);
-                
             }
-            
         }
     }
-      
 }
 
 void BRKGA::mutacao_3_vetor(int sem_melhora, int t)
@@ -1404,143 +1440,137 @@ void BRKGA::mutacao_3_vetor(int sem_melhora, int t)
     int sorteio, sorteio_individuo, sorteio_linha;
     vector<int> vetor_sorteio = vector<int>(tam_populacao);
 
-    for (int i = 0; i < vetor_sorteio.size() -1; i++)
+    for (int i = 0; i < vetor_sorteio.size() - 1; i++)
     {
         vetor_sorteio[i] = 1 + i;
-        
     }
 
     random_shuffle(vetor_sorteio.begin(), vetor_sorteio.end());
 
     vetor_mutante = vector<vector<vector<pair<double, double>>>>(this->tam_mutante, vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7)));
 
-
-    
     for (int i = 0; i < tam_mutante; i++)
     {
-        if(sem_melhora >= 50){
+        if (sem_melhora >= 50)
+        {
             limite = 2;
         }
         /*if(sem_melhora >= 150){
             limite = 8;
         }*/
 
-        if(sem_melhora < 50){
+        if (sem_melhora < 50)
+        {
             limite = 5;
         }
-        
+
         vetor_mutante[i] = populacao[vetor_sorteio[i]];
-        
+
         sorteio = (mt.randInt() % 7);
-        
+
         for (int j = 0; j < limite; j++)
         {
             sorteio_linha = mt.randInt() % cn->vetor_qualificacao.size();
             vetor_mutante[i][sorteio_linha][sorteio].first = randzero();
             vetor_mutante[i][sorteio_linha][sorteio].second = randzero();
         }
-        
-        
-        
-     if(sem_melhora % 8 == 0 && sem_melhora <= 50)
+
+        if (sem_melhora % 8 == 0 && sem_melhora <= 50)
         {
             vetor_mutante[i] = VND(vetor_mutante[i]);
         }
 
         if (sem_melhora % 8 == 0 && sem_melhora >= 50)
         {
-            
+
             vetor_mutante[i] = VND(vetor_mutante[i]);
         }
-
     }
-  
 }
 
-bool BRKGA::troca_decoficador(vector<vector<pair<string,string>>> &individuo_decodificado)
+bool BRKGA::troca_decoficador(vector<vector<pair<string, string>>> &individuo_decodificado)
 {
     int requerimentos = 0;
     bool melhora = false;
-    int limite,tam_corte;
+    int limite, tam_corte;
     individuo_codificado = codificador_ponderado_2(individuo_decodificado);
-    int sorteio, sorteio_individuo, sorteio_linha,fitness,fitness_linha;
+    int sorteio, sorteio_individuo, sorteio_linha, fitness, fitness_linha;
     vector<int> vetor_sorteio = vector<int>(cn->vetor_qualificacao.size());
 
     for (int i = 0; i < vetor_sorteio.size(); i++)
     {
         vetor_sorteio[i] = i;
     }
-    
-    
-    vector<pair<double,double>> aux = vector<pair<double,double>>(7);
-    vector<pair<double,double>> aux_2 = vector<pair<double,double>>(7);
+
+    vector<pair<double, double>> aux = vector<pair<double, double>>(7);
+    vector<pair<double, double>> aux_2 = vector<pair<double, double>>(7);
     random_shuffle(vetor_sorteio.begin(), vetor_sorteio.end());
-    
 
     sorteio = (mt.randInt() % 7);
     limite = 7 - sorteio;
     tam_corte = (mt.randInt() % limite);
     tam_corte++;
     tam_corte = 1;
-   
-    
 
     for (int i = 0; i < vetor_sorteio.size() - 1; i++)
     {
-        
-        
-            individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
-            funcao_avaliacao_colunas(individuo_decodificado);
-            for(int t = sorteio; t < sorteio + tam_corte; t++){
-                requerimentos = requerimentos + custo_colunas[t];
-                aux[t].first = individuo_codificado[vetor_sorteio[i]][sorteio].first;
-                aux[t].second = individuo_codificado[vetor_sorteio[i]][sorteio].second;
-                aux_2[t].first = individuo_codificado[vetor_sorteio[i + 1]][sorteio].first;
-                aux_2[t].second = individuo_codificado[vetor_sorteio[i + 1]][sorteio].second;
-            }
-           
-            fitness = requerimentos + funcao_avaliacao_linha(individuo_decodificado,i) + funcao_avaliacao_linha(individuo_decodificado, i + 1);
-           
-            requerimentos = 0;
 
-            for(int t = sorteio; t < sorteio + tam_corte; t++){//fazer o swap
-                individuo_codificado[vetor_sorteio[i]][sorteio].first = aux_2[t].first;
-                individuo_codificado[vetor_sorteio[i]][sorteio].second = aux_2[t].second;
-                individuo_codificado[vetor_sorteio[i + 1]][sorteio].first = aux[t].first;
-                individuo_codificado[vetor_sorteio[i + 1]][sorteio].second = aux[t].second;
-            }
+        individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
+        funcao_avaliacao_colunas(individuo_decodificado);
+        for (int t = sorteio; t < sorteio + tam_corte; t++)
+        {
+            requerimentos = requerimentos + custo_colunas[t];
+            aux[t].first = individuo_codificado[vetor_sorteio[i]][sorteio].first;
+            aux[t].second = individuo_codificado[vetor_sorteio[i]][sorteio].second;
+            aux_2[t].first = individuo_codificado[vetor_sorteio[i + 1]][sorteio].first;
+            aux_2[t].second = individuo_codificado[vetor_sorteio[i + 1]][sorteio].second;
+        }
 
-            individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
-            funcao_avaliacao_colunas(individuo_decodificado);
-            for(int t = sorteio; t < sorteio + tam_corte; t++){
-                requerimentos = requerimentos = requerimentos + custo_colunas[t];  
-            }
-            
-            
-            fitness_linha = requerimentos + funcao_avaliacao_linha(individuo_decodificado,i) + funcao_avaliacao_linha(individuo_decodificado, i + 1);
-            
-            requerimentos = 0;
-            if(fitness_linha < fitness){
-                melhora = true;
-                random_shuffle(vetor_sorteio.begin(), vetor_sorteio.end());
-                    i = -1;
-                    sorteio = (mt.randInt() % 7);
-                    limite = 7 - sorteio;
-                    tam_corte = (mt.randInt() % limite);
-                    tam_corte++;
-                    tam_corte = 1;
-            }
-            else{
-                for(int t = sorteio; t < sorteio + tam_corte; t++){
+        fitness = requerimentos + funcao_avaliacao_linha(individuo_decodificado, i) + funcao_avaliacao_linha(individuo_decodificado, i + 1);
+
+        requerimentos = 0;
+
+        for (int t = sorteio; t < sorteio + tam_corte; t++)
+        { //fazer o swap
+            individuo_codificado[vetor_sorteio[i]][sorteio].first = aux_2[t].first;
+            individuo_codificado[vetor_sorteio[i]][sorteio].second = aux_2[t].second;
+            individuo_codificado[vetor_sorteio[i + 1]][sorteio].first = aux[t].first;
+            individuo_codificado[vetor_sorteio[i + 1]][sorteio].second = aux[t].second;
+        }
+
+        individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
+        funcao_avaliacao_colunas(individuo_decodificado);
+        for (int t = sorteio; t < sorteio + tam_corte; t++)
+        {
+            requerimentos = requerimentos = requerimentos + custo_colunas[t];
+        }
+
+        fitness_linha = requerimentos + funcao_avaliacao_linha(individuo_decodificado, i) + funcao_avaliacao_linha(individuo_decodificado, i + 1);
+
+        requerimentos = 0;
+        if (fitness_linha < fitness)
+        {
+            melhora = true;
+            random_shuffle(vetor_sorteio.begin(), vetor_sorteio.end());
+            i = -1;
+            sorteio = (mt.randInt() % 7);
+            limite = 7 - sorteio;
+            tam_corte = (mt.randInt() % limite);
+            tam_corte++;
+            tam_corte = 1;
+        }
+        else
+        {
+            for (int t = sorteio; t < sorteio + tam_corte; t++)
+            {
                 individuo_codificado[vetor_sorteio[i]][sorteio].first = aux[t].first;
                 individuo_codificado[vetor_sorteio[i]][sorteio].second = aux[t].second;
                 individuo_codificado[vetor_sorteio[i + 1]][sorteio].first = aux_2[t].first;
                 individuo_codificado[vetor_sorteio[i + 1]][sorteio].second = aux_2[t].second;
-                }
-            } 
-        
+            }
+        }
     }
-    
+
     individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
     return melhora;
 }
@@ -1555,25 +1585,21 @@ vector<vector<pair<double, double>>> BRKGA::mutacao_2()
     for (int i = 0; i < vetor_sorteio.size(); i++)
     {
         vetor_sorteio[i] = tam_elitista + i;
-        
     }
 
-    
     for (int i = 0; i < vetor_sorteio_2.size(); i++)
     {
         vetor_sorteio_2[i] = i;
     }
- 
+
     random_shuffle(vetor_sorteio_2.begin(), vetor_sorteio_2.end());
-    
+
     for (int j = 0; j < (cn->vetor_qualificacao.size()); j++)
     {
         sorteio = (mt.randInt() % 7);
 
-
         individuo_codificado[vetor_sorteio_2[j]][sorteio].first = randzero();
         individuo_codificado[vetor_sorteio_2[j]][sorteio].second = randzero();
-
     }
     return individuo_codificado;
 }
@@ -1584,7 +1610,6 @@ vector<vector<pair<double, double>>> BRKGA::mutacao_2_cruzamento(vector<vector<p
     int moeda_mutacao;
     vector<int> vetor_sorteio = vector<int>(populacao_nao_elitista.size());
     vector<int> vetor_sorteio_2 = vector<int>(cn->vetor_qualificacao.size());
-    
 
     for (int i = 0; i < vetor_sorteio_2.size(); i++)
     {
@@ -1613,7 +1638,6 @@ vector<vector<pair<double, double>>> BRKGA::mutacao_2_cruzamento(vector<vector<p
         }
     }
 
-    
     vetor_mutante = vector<vector<vector<pair<double, double>>>>(this->tam_mutante, vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7)));
     moeda_mutacao = randzero();
     if (moeda <= 0.8)
@@ -1642,9 +1666,8 @@ vector<vector<vector<pair<double, double>>>> BRKGA::mutacao_combinada_ponderada(
     vetor_mutante = vector<vector<vector<pair<double, double>>>>(this->tam_mutante, vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7)));
     for (int i = 0; i < tam_mutante; i++)
     {
-       
+
         vetor_mutante[i] = criar_individuo();
-    
     }
     return vetor_mutante;
 }
@@ -1670,11 +1693,10 @@ vector<vector<vector<pair<double, double>>>> BRKGA::mutacao_combinada()
 
 vector<vector<pair<double, double>>> BRKGA::cruzamento(vector<vector<pair<double, double>>> &pai_elite, vector<vector<pair<double, double>>> &pai_nao_elite)
 {
-   
+
     vector<vector<pair<double, double>>> resultado;
     resultado = vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7));
     double moeda;
-    
 
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
@@ -1690,35 +1712,30 @@ vector<vector<pair<double, double>>> BRKGA::cruzamento(vector<vector<pair<double
             {
                 resultado[i][j].first = pai_nao_elite[i][j].first;
                 resultado[i][j].second = pai_nao_elite[i][j].second;
-            } 
+            }
         }
     }
-  
+
     return resultado;
 }
 
 vector<vector<pair<double, double>>> BRKGA::cruzamento_ponto_corte(vector<vector<pair<double, double>>> &pai_elite, vector<vector<pair<double, double>>> &pai_nao_elite)
 {
-    
-  
+
     int corte;
- 
+
     vector<vector<pair<double, double>>> resultado;
 
-  
-    
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
         corte = mt.randInt() % 7;
         if (corte >= 3)
         {
-              
-            
-            for (int j = corte + 1 ; j < 7; j++)
+
+            for (int j = corte + 1; j < 7; j++)
             {
                 pai_elite[i][j].first = pai_nao_elite[i][j].first;
                 pai_elite[i][j].second = pai_nao_elite[i][j].second;
-               
             }
         }
         else
@@ -1727,43 +1744,39 @@ vector<vector<pair<double, double>>> BRKGA::cruzamento_ponto_corte(vector<vector
             {
                 pai_elite[i][j].first = pai_nao_elite[i][j].first;
                 pai_elite[i][j].second = pai_nao_elite[i][j].second;
-               
             }
         }
-      
     }
-    
+
     return pai_elite;
-    
 }
 
 vector<vector<vector<pair<double, double>>>> BRKGA::cruzamento_ponto_corte_2(vector<vector<pair<double, double>>> &pai_elite, vector<vector<pair<double, double>>> &pai_nao_elite)
 {
- 
+
     resultado_cruzamento = vector<vector<vector<pair<double, double>>>>(2, vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7)));
-    
+
     int corte;
-  
+
     vector<vector<pair<double, double>>> resultado;
     resultado = vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7));
     resultado_cruzamento[0] = pai_elite;
-    resultado_cruzamento[1] = pai_nao_elite;    //resultado_2 = vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7));
-    
+    resultado_cruzamento[1] = pai_nao_elite; //resultado_2 = vector<vector<pair<double, double>>>(cn->vetor_qualificacao.size(), vector<pair<double, double>>(7));
+
     corte = mt.randInt() % 7;
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
-            
-            for (int j = corte; j < 7; j++)
-            {
-                resultado_cruzamento[0][i][j].first = pai_nao_elite[i][j].first;
-                resultado_cruzamento[0][i][j].second = pai_nao_elite[i][j].second;
-                resultado_cruzamento[1][i][j].first =  pai_elite[i][j].first;
-                resultado_cruzamento[1][i][j].second = pai_elite[i][j].second;
-            }   
+
+        for (int j = corte; j < 7; j++)
+        {
+            resultado_cruzamento[0][i][j].first = pai_nao_elite[i][j].first;
+            resultado_cruzamento[0][i][j].second = pai_nao_elite[i][j].second;
+            resultado_cruzamento[1][i][j].first = pai_elite[i][j].first;
+            resultado_cruzamento[1][i][j].second = pai_elite[i][j].second;
+        }
     }
     return resultado_cruzamento;
 }
-
 
 vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo()
 {
@@ -1795,7 +1808,7 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo()
     matriz_compatibilidades();
     int i;
     int elite, nao_elite;
-    
+
     porcentagem_contratos();
     melhora_populacao_inicial();
 
@@ -1804,28 +1817,26 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo()
     cout << "Melhor individuo Inicial" << melhor_individuo << endl;
     dividir_populacao(populacao);
 
-    for ( i = 0; i < num_geracoes; i++)
+    for (i = 0; i < num_geracoes; i++)
     {
-             mutacao_2_vetor(sem_melhora,i); 
+        mutacao_2_vetor(sem_melhora, i);
 
-            for (int j = 0; j < populacao_elitista.size(); j++)
-            {
+        for (int j = 0; j < populacao_elitista.size(); j++)
+        {
             populacao[j] = populacao_elitista[j];
-            }
+        }
 
-        
-            for (int h = tam_elitista; h < (tam_elitista + tam_mutante); h++)
-            {
-                populacao[h] = vetor_mutante[h - tam_elitista];
-            }
+        for (int h = tam_elitista; h < (tam_elitista + tam_mutante); h++)
+        {
+            populacao[h] = vetor_mutante[h - tam_elitista];
+        }
 
-        
-            for (int k = (tam_elitista + tam_mutante); k < tam_populacao; k++)
-            {
-                elite = (rand() % (tam_elitista));
-                nao_elite = (rand() % (tam_nao_elitista));
-                populacao[k] = cruzamento_ponto_corte(populacao_elitista[elite], populacao_nao_elitista[nao_elite]);
-           }
+        for (int k = (tam_elitista + tam_mutante); k < tam_populacao; k++)
+        {
+            elite = (rand() % (tam_elitista));
+            nao_elite = (rand() % (tam_nao_elitista));
+            populacao[k] = cruzamento_ponto_corte(populacao_elitista[elite], populacao_nao_elitista[nao_elite]);
+        }
 
         dividir_populacao(populacao);
         individuo_decodificado = decodificar_individuo_2(populacao_elitista[0]);
@@ -1840,17 +1851,16 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo()
         {
             sem_melhora++;
         }
-        
 
         tempo = clock();
-        resultado_tempo = ((tempo - t)/(double)CLOCKS_PER_SEC);
-         
-        
-    if(resultado_tempo >= 47.00){
-        cout << "Acabou o tempo" << endl;
-        cout << "Tempo" << ' ' << resultado_tempo << endl;
-        temp.stop();
-        return populacao_elitista[0];
+        resultado_tempo = ((tempo - t) / (double)CLOCKS_PER_SEC);
+
+        if (resultado_tempo >= 47.00)
+        {
+            cout << "Acabou o tempo" << endl;
+            cout << "Tempo" << ' ' << resultado_tempo << endl;
+            temp.stop();
+            return populacao_elitista[0];
         }
     }
 }
@@ -1864,20 +1874,22 @@ void BRKGA::porcentagem_contratos()
     }
 }
 
-int BRKGA::multi_start(int &iteracoes_max)
+int BRKGA::multi_start(int &iteracoes_max, double &tempo)
 {
     int num_iteracoes = 0;
     int melhor_individuo = 999999;
     int melhor_aux = 0;
     int sol_alocacoes = 0;
     int custo = 0;
+    cout << "Entrou multi_start" << endl;
+    //getchar();
     vector<vector<pair<string, string>>> sol_decodificada_ponderada;
     vector<vector<pair<double, double>>> solucao_final;
     vector<vector<pair<string, string>>> solucao_parcial_decodificada;
     while (num_iteracoes < iteracoes_max)
     {
         cout << "Entrou while" << endl;
-        vector<vector<pair<double, double>>> solucao_parcial = ciclo_evolutivo_ponderado();
+        vector<vector<pair<double, double>>> solucao_parcial = ciclo_evolutivo_ponderado(tempo);
         //vector<vector<pair<double, double>>> solucao_parcial = ciclo_evolutivo();
 
         num_iteracoes++;
@@ -1898,11 +1910,13 @@ int BRKGA::multi_start(int &iteracoes_max)
     sol_decodificada_ponderada = decodificar_individuo_ponderado_2_sol(solucao_final, sol_alocacoes);
     //sol_decodificada_ponderada = decodificar_individuo_2_sol(solucao_final, sol_alocacoes);
     cout << "Chegou aqui!!!!" << endl;
+    //cout  << "Chegou aqui!!!!" << endl;
     print_decodificado(sol_decodificada_ponderada);
     custo = funcao_avaliacao_teste(sol_decodificada_ponderada);
     cout << "Custo" << custo << endl;
     custo = funcao_avaliacao(sol_decodificada_ponderada);
     cout << "Custo_avaliacao_sem_print" << custo << endl;
+    //getchar();
     ofstream arquivo;
     arquivo.open(this->nomeArq);
     string s;
@@ -1969,6 +1983,8 @@ int BRKGA::multi_start(int &iteracoes_max)
         s = "fim";
     }
 
+    cout << "depoisssssss" << endl;
+    //cout << "Arquivo custom out:" << ' ' << this->custom_out << endl;
 
     ofstream arquivo_custom;
     arquivo_custom.open(this->custom_out);
@@ -2016,6 +2032,7 @@ int BRKGA::multi_start(int &iteracoes_max)
                     }
                 }
             }
+            //arquivo_custom << dias_trabalhados[i] << endl;
         }
         arquivo_custom.close();
         p = "fim";
@@ -2024,7 +2041,7 @@ int BRKGA::multi_start(int &iteracoes_max)
     return melhor_individuo;
 }
 
-vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo_ponderado()
+vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo_ponderado(double &tempo_disponivel)
 {
     Timer temp;
     temp.start();
@@ -2055,7 +2072,7 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo_ponderado()
 
     int elite, nao_elite;
     gerar_populacao();
-    
+
     porcentagem_contratos();
     cout << "aqui" << endl;
     double resultado_tempo;
@@ -2063,31 +2080,28 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo_ponderado()
     individuo_decodificado = decodificar_individuo_ponderado_2(populacao[0]);
     melhor_individuo = funcao_avaliacao(individuo_decodificado);
     cout << "Melhor individuo Inicial" << melhor_individuo << endl;
-    
 
     for (i = 0; i < num_geracoes; i++)
     {
 
-            
-             mutacao_2_vetor(sem_melhora,i);
-            for (int j = 0; j < populacao_elitista.size(); j++)
-            {
+        mutacao_2_vetor(sem_melhora, i);
+        for (int j = 0; j < populacao_elitista.size(); j++)
+        {
             populacao[j] = populacao_elitista[j];
-            }
+        }
 
-        
-            for (int h = tam_elitista; h < (tam_elitista + tam_mutante); h++)
-            {
-                populacao[h] = vetor_mutante[h - tam_elitista];
-            }
+        for (int h = tam_elitista; h < (tam_elitista + tam_mutante); h++)
+        {
+            populacao[h] = vetor_mutante[h - tam_elitista];
+        }
 
-            for (int k = (tam_elitista + tam_mutante); k < tam_populacao; k++)
-            {
-                elite = (rand() % (tam_elitista));
-                nao_elite = (rand() % (tam_nao_elitista));
-                populacao[k] = cruzamento_ponto_corte(populacao_elitista[elite], populacao_nao_elitista[nao_elite]);
-           }
-  
+        for (int k = (tam_elitista + tam_mutante); k < tam_populacao; k++)
+        {
+            elite = (rand() % (tam_elitista));
+            nao_elite = (rand() % (tam_nao_elitista));
+            populacao[k] = cruzamento_ponto_corte(populacao_elitista[elite], populacao_nao_elitista[nao_elite]);
+        }
+
         dividir_populacao_2(populacao);
         individuo_decodificado = decodificar_individuo_ponderado_2(populacao_elitista[0]);
         melhor_custo = funcao_avaliacao(individuo_decodificado);
@@ -2101,23 +2115,25 @@ vector<vector<pair<double, double>>> BRKGA::ciclo_evolutivo_ponderado()
         {
             sem_melhora++;
         }
-       
 
         tempo = clock();
-        resultado_tempo = ((tempo - t)/(double)CLOCKS_PER_SEC);
-    
-    if(resultado_tempo >= 370.00){ // alterar o tempo conforme o número de enfermeiros das instâncias
-        cout << "Acabou o tempo" << endl;
-        cout << "Tempo" << ' ' << resultado_tempo << endl;
-        temp.stop();
-        for(int i = 0; i < tam_populacao; i++){
-            individuo_decodificado = decodificar_individuo_ponderado_2(populacao[i]);
-            custo = funcao_avaliacao_teste(individuo_decodificado);
-            cout << "Custo" << ' ' << custo << endl;
+        resultado_tempo = ((tempo - t) / (double)CLOCKS_PER_SEC);
+
+        if (resultado_tempo >= tempo_disponivel)
+        { // alterar o tempo conforme o número de enfermeiros das instâncias
+            cout << "Acabou o tempo" << endl;
+            cout << "Tempo" << ' ' << resultado_tempo << endl;
+            temp.stop();
+            /*for (int i = 0; i < tam_populacao; i++)
+            {
+                individuo_decodificado = decodificar_individuo_ponderado_2(populacao[i]);
+                custo = funcao_avaliacao_teste(individuo_decodificado);
+                cout << "Custo" << ' ' << custo << endl;
+            }*/
+            
+            return populacao_elitista[0];
         }
-        return populacao_elitista[0];
-        }
-    }   
+    }
 }
 
 vector<vector<pair<string, string>>> BRKGA::trocar_turno(vector<vector<pair<string, string>>> &individuo_decodificado)
@@ -2409,19 +2425,17 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao(vector<vector<pa
         {
             if (j == 0)
             {
-                fitness = funcao_avaliacao_minimo(individuo_decodificado, i); 
+                fitness = funcao_avaliacao_minimo(individuo_decodificado, i);
             }
 
-            
             if (sorteio.size() != 0)
             {
                 posicao = (mt.randInt() % sorteio.size());
 
-
                 for (int h = 0; h < cn->vetor_qualificacao[sorteio[posicao]].num_funcoes; h++)
                 {
                     cout << cn->vetor_qualificacao[sorteio[posicao]].funcoes[h] << ' ';
-                    
+
                     if (cn->vetor_qualificacao[sorteio[posicao]].funcoes[h] != individuo_decodificado[sorteio[posicao]][i].second)
                     {
 
@@ -2498,8 +2512,8 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_none[0];
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_none[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            if (fitness_linha > fitness) 
-                            {                            
+                            if (fitness_linha > fitness)
+                            {
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
                             }
 
@@ -2507,7 +2521,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2544,7 +2558,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2572,7 +2586,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_day[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2582,7 +2596,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2610,7 +2624,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_late[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2620,7 +2634,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2648,7 +2662,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_night[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2658,7 +2672,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2699,13 +2713,13 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                               
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
                                 }
                             }
-                             if (fitness_linha < fitness) // trocar o turno melhorou a solucao, entao a qualificação ja estava correta
+                            if (fitness_linha < fitness) // trocar o turno melhorou a solucao, entao a qualificação ja estava correta
                             {
                                 fitness = fitness_linha;
                                 t = cn->vetor_early.size(); // se melhorou com a troca de turnos ou qualificacao, nao é mais necessario repetir o procedimento.
@@ -2720,14 +2734,14 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                                 contem = true;
                         }
                         if (contem == false)
-                            
+
                             aux1.first = "Early";
                         for (int t = 1; t < cn->vetor_early.size(); t++) // t=0 sempre possui none como valor
                         {
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_early[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2737,7 +2751,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2764,7 +2778,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_day[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2774,7 +2788,7 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2786,7 +2800,6 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                                 t = cn->vetor_day.size(); // se melhorou com a troca de turnos ou qualificacao, nao é mais necessario repetir o procedimento.
                             }
                         }
-                    
                     }
                     if (individuo_decodificado[sorteio[posicao]][i - 1].first == "Late")
                     {
@@ -2796,14 +2809,14 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                                 contem = true;
                         }
                         if (contem == false)
-                            
+
                             aux1.first = "Late";
                         for (int t = 1; t < cn->vetor_late.size(); t++) // t=0 sempre possui none como valor
                         {
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_late[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2813,20 +2826,19 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                                
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
                                 }
                             }
-                         
+
                             if (fitness_linha < fitness) // trocar o turno melhorou a solucao, entao a qualificação ja estava correta
                             {
                                 fitness = fitness_linha;
                                 t = cn->vetor_late.size(); // se melhorou com a troca de turnos ou qualificacao, nao é mais necessario repetir o procedimento.
                             }
                         }
-                        
                     }
                     if (individuo_decodificado[sorteio[posicao]][i - 1].first == "Night")
                     {
@@ -2836,14 +2848,14 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                                 contem = true;
                         }
                         if (contem == false)
-                            
+
                             aux1.first = "Night";
                         for (int t = 1; t < cn->vetor_night.size(); t++) // t=0 sempre possui none como valor
                         {
 
                             individuo_decodificado[sorteio[posicao]][i].first = cn->vetor_night[t]; // faz troca de turnos
                             fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                            
+
                             if (fitness_linha > fitness) // um requerimento minimo ja estava sendo cumprido e mudar o turno piorou a soluçao
                             {                            // troca deve ser desfeita
                                 individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
@@ -2853,20 +2865,19 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_turno(vector<vec
                             {
                                 individuo_decodificado = trocar_qualificacao_enfermeiro(individuo_decodificado, sorteio, posicao, fitness_linha, i);
                                 fitness_linha = funcao_avaliacao_minimo(individuo_decodificado, i);
-                               
+
                                 if (fitness_linha == fitness)
                                 { // se mesmo depois da troca de qualificao a solucao nao melhorou
                                     individuo_decodificado[sorteio[posicao]][i].first = aux1.first;
                                 }
                             }
-                          
+
                             if (fitness_linha < fitness) // trocar o turno melhorou a solucao, entao a qualificação ja estava correta
                             {
                                 fitness = fitness_linha;
                                 t = cn->vetor_night.size(); // se melhorou com a troca de turnos ou qualificacao, nao é mais necessario repetir o procedimento.
                             }
                         }
-                        
                     }
                 }
                 sorteio.erase(sorteio.begin() + posicao);
@@ -2911,15 +2922,13 @@ vector<vector<pair<string, string>>> BRKGA::troca_qualificao_turno_aleatorio(vec
     random_shuffle(sorteio.begin(), sorteio.end());
     sorteio_aux = sorteio;
 
-   
     while (sorteio.size() != 0)
     {
         melhora = false;
-      
 
         i = sorteio[0].first;
         j = sorteio[0].second;
-        
+
         fitness = funcao_avaliacao_minimo_completa(individuo_decodificado);
         atribuicoes.first = individuo_decodificado[i][j].first;
         atribuicoes.second = individuo_decodificado[i][j].second;
@@ -2970,9 +2979,9 @@ vector<vector<pair<string, string>>> BRKGA::trocar_qualificacao_enfermeiro(vecto
 
             aux = individuo_decodificado[sorteio[posicao]][i].second;
             individuo_decodificado[sorteio[posicao]][i].second = cn->vetor_qualificacao[sorteio[posicao]].funcoes[h]; // faz a troca de qualificação
-            
+
             fitness_linha = funcao_avaliacao_minimo_completa(individuo_decodificado);
-            
+
             if (fitness_linha >= fitness)
             { // troca deve ser desfeita
                 individuo_decodificado[sorteio[posicao]][i].second = aux;
@@ -3227,7 +3236,6 @@ vector<vector<pair<double, double>>> BRKGA::codificador_ponderado(vector<vector<
                                     {
                                         razao = ((1 - porcentagens[t]) / (cn->vetor_none.size() - 1));
                                         codificado[i][j].first = (porcentagens[t] + (p * razao));
-                                        
                                     }
                                     p = cn->vetor_none.size();
                                 }
@@ -3266,7 +3274,7 @@ vector<vector<pair<double, double>>> BRKGA::codificador_ponderado(vector<vector<
                                     else
                                     {
                                         razao = ((1 - porcentagens[t]) / (cn->vetor_day.size() - 1));
-                                        codificado[i][j].first = (porcentagens[t] + (p * razao)); 
+                                        codificado[i][j].first = (porcentagens[t] + (p * razao));
                                     }
                                     p = cn->vetor_day.size();
                                 }
@@ -3372,7 +3380,7 @@ vector<vector<pair<double, double>>> BRKGA::codificador_ponderado(vector<vector<
                                     else
                                     {
                                         razao = ((1 - porcentagens[t]) / (cn->vetor_day.size() - 1));
-                                        codificado[i][j].first = (porcentagens[t] + (p * razao)); 
+                                        codificado[i][j].first = (porcentagens[t] + (p * razao));
                                     }
                                     p = cn->vetor_day.size();
                                 }
@@ -3391,7 +3399,7 @@ vector<vector<pair<double, double>>> BRKGA::codificador_ponderado(vector<vector<
                                     else
                                     {
                                         razao = ((1 - porcentagens[t]) / (cn->vetor_late.size() - 1));
-                                        codificado[i][j].first = (porcentagens[t] + (p * razao));  
+                                        codificado[i][j].first = (porcentagens[t] + (p * razao));
                                     }
                                     p = cn->vetor_late.size();
                                 }
@@ -3462,7 +3470,6 @@ vector<vector<pair<double, double>>> BRKGA::codificador_ponderado_2(vector<vecto
                             {
                                 razao = ((1 - porcentagens[t]) / (cn->vetor_none.size() - 1));
                                 codificado[i][j].first = (porcentagens[t] + (p * razao));
-                                
                             }
                             break;
                         }
@@ -3506,10 +3513,8 @@ void BRKGA::melhora_populacao_inicial()
             {
                 individuo_decodificado = troca_qualificao_turno_aleatorio(individuo_decodificado);
             }
-
         }
         solucoes[i] = codificador_2(individuo_decodificado);
-       
     }
 
     vector<pair<int, int>> ordenacao(solucoes.size());
@@ -3559,36 +3564,34 @@ void BRKGA::melhora_populacao_inicial_ponderado()
                 individuo_decodificado = troca_qualificao_turno_aleatorio(individuo_decodificado);
                 individuo_decodificado = trocar_qualificacao_turno(individuo_decodificado);
             }
-        solucoes[i] = codificador_ponderado_2(individuo_decodificado);
-    }
-
-    vector<pair<int, int>> ordenacao(solucoes.size());
-    int count = 0;
-    for (int i = 0; i < ordenacao.size(); i++)
-    {
-        individuo_decodificado = decodificar_individuo_ponderado_2(solucoes[i]);
-        ordenacao[i].first = funcao_avaliacao(individuo_decodificado);
-        if (ordenacao[i].first < 1000)
-        {
-            count++;
+            solucoes[i] = codificador_ponderado_2(individuo_decodificado);
         }
-        ordenacao[i].second = i;
-        
-    }
-    cout << "Fitness populacao elitista inicial" << endl;
-    sort(ordenacao.begin(), ordenacao.end());
-    for (int i = 0; i < ordenacao.size(); i++)
-    {
-        cout << ordenacao[i].first << endl;
-    }
 
-    
-    for (int i = 0; i < tam_populacao; i++)
-    {
-        populacao[i] = solucoes[ordenacao[i].second];
+        vector<pair<int, int>> ordenacao(solucoes.size());
+        int count = 0;
+        for (int i = 0; i < ordenacao.size(); i++)
+        {
+            individuo_decodificado = decodificar_individuo_ponderado_2(solucoes[i]);
+            ordenacao[i].first = funcao_avaliacao(individuo_decodificado);
+            if (ordenacao[i].first < 1000)
+            {
+                count++;
+            }
+            ordenacao[i].second = i;
+        }
+        cout << "Fitness populacao elitista inicial" << endl;
+        sort(ordenacao.begin(), ordenacao.end());
+        for (int i = 0; i < ordenacao.size(); i++)
+        {
+            cout << ordenacao[i].first << endl;
+        }
+
+        for (int i = 0; i < tam_populacao; i++)
+        {
+            populacao[i] = solucoes[ordenacao[i].second];
+        }
     }
 }
-
 void BRKGA::troca_populacao()
 {
     int aux = 0;
@@ -3602,8 +3605,6 @@ void BRKGA::troca_populacao()
 
         individuo_codificado = criar_individuo();
 
-       
-
         individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
 
         for (int j = 0; j < 3; j++)
@@ -3614,14 +3615,12 @@ void BRKGA::troca_populacao()
 
                 individuo_decodificado = primeira_melhora_2_aleatorio(individuo_decodificado);
                 individuo_decodificado = troca_qualificao_turno_aleatorio(individuo_decodificado);
-                
             }
-
 
             individuo_decodificado = trocar_qualificacao_turno(individuo_decodificado);
 
             aux = funcao_avaliacao_minimo_completa(individuo_decodificado);
-            
+
             if (aux == 0)
             {
                 j = 3;
@@ -3651,7 +3650,6 @@ void BRKGA::troca_populacao()
         cout << ordenacao[i].first << endl;
     }
 
-    
     for (int i = tam_elitista; i < tam_populacao; i++)
     {
         populacao[i] = solucoes[ordenacao[i].second];
@@ -3666,7 +3664,7 @@ void BRKGA::melhora_populacao()
     vector<vector<vector<pair<double, double>>>> solucoes;
     for (int i = 0; i < populacao.size(); i++)
     {
-        
+
         individuo_decodificado = decodificar_individuo_ponderado_2(populacao[i]);
         for (int j = 0; j < 3; j++)
         {
@@ -3679,7 +3677,7 @@ void BRKGA::melhora_populacao()
             if (aux == 0)
             {
                 break;
-            } 
+            }
         }
         individuo_decodificado = primeira_melhora_2_aleatorio(individuo_decodificado);
         populacao[i] = codificador_ponderado_2(individuo_decodificado);
@@ -4004,10 +4002,10 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
                 {
                     for (int h = 0; h < cn->vetor_contratos.size(); h++)
                     {
-                        
+
                         if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                         {
-                            
+
                             if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
                             {
                                 dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
@@ -4055,7 +4053,6 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
                                 dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
                             }
                             count_folgas = 0;
-                            
                         }
                     }
                 }
@@ -4212,7 +4209,7 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
                 {
                     if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
                     {
-                        
+
                         if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
                         {
                             s7++;
@@ -4226,12 +4223,10 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
                     if (count_dias_trabalhados < divisao_first)
                     {
                         dias_trabalhados = dias_trabalhados + (divisao_first - count_dias_trabalhados);
-                        
                     }
                     if (count_dias_trabalhados > divisao_second)
                     {
                         dias_trabalhados = dias_trabalhados + (count_dias_trabalhados - divisao_second);
-                        
                     }
                     break;
                 }
@@ -4247,25 +4242,23 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
                 {
                     if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
                     {
-                        
+
                         if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
                         {
                             s7++;
                         }
                     }
                     int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
-                    
+
                     int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas));
 
                     if (count_dias_trabalhados < divisao_first)
                     {
                         dias_trabalhados = dias_trabalhados + (divisao_first - count_dias_trabalhados);
-                        
                     }
                     if (count_dias_trabalhados > divisao_second)
                     {
                         dias_trabalhados = dias_trabalhados + (count_dias_trabalhados - divisao_second);
-                        
                     }
                     break;
                 }
@@ -4437,7 +4430,7 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
     dias_folgas = (dias_folgas * 30);
     turnos_consecutivos = (turnos_consecutivos * 15);
     consecutivos = turnos_consecutivos + dias_consecutivos;
-    if (aux <= cn->num_semanas/2)
+    if (aux <= cn->num_semanas / 2)
     {
         s7 = (s7 * 30);
         dias_trabalhados = (dias_trabalhados * 20);
@@ -4467,7 +4460,7 @@ int BRKGA::funcao_avaliacao_teste(vector<vector<pair<string, string>>> &individu
 
 vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(vector<vector<pair<double, double>>> &individuo_codificado, int &sol_alocacoes)
 {
-    
+
     individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
     int posicao = 0;
     double razao = 0;
@@ -4502,7 +4495,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                           
                         }
                         if (ht->matriz_borda_s[i][1] == "Early")
                         {
@@ -4523,7 +4515,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Day")
                         {
@@ -4543,7 +4534,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Late")
                         {
@@ -4564,11 +4554,10 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Night")
                         {
-                           
+
                             if (individuo_codificado[i][j].first <= porcentagens[t])
                             {
                                 individuo_decodificado[i][j].first = cn->vetor_night[0];
@@ -4576,7 +4565,7 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                             else
                             {
                                 razao = ((1 - porcentagens[t]) / (cn->vetor_night.size() - 1));
-                                
+
                                 for (int h = 1; h < cn->vetor_night.size(); h++)
                                 {
 
@@ -4587,7 +4576,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                           
                         }
                     }
                 }
@@ -4616,7 +4604,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Early")
                         {
@@ -4636,7 +4623,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Day")
                         {
@@ -4656,7 +4642,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Late")
                         {
@@ -4676,7 +4661,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                           
                         }
                         if (individuo_decodificado[i][j - 1].first == "Night")
                         {
@@ -4697,7 +4681,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
                                     }
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -4730,7 +4713,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_sol(
 vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vector<vector<pair<double, double>>> &individuo_codificado)
 {
 
-    
     individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
     int posicao = 0;
     double razao = 0;
@@ -4765,7 +4747,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Early")
                         {
@@ -4786,7 +4767,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Day")
                         {
@@ -4806,7 +4786,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Late")
                         {
@@ -4827,11 +4806,10 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (ht->matriz_borda_s[i][1] == "Night")
                         {
-                          
+
                             if (individuo_codificado[i][j].first <= porcentagens[t])
                             {
                                 individuo_decodificado[i][j].first = cn->vetor_night[0];
@@ -4850,7 +4828,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -4880,7 +4857,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Early")
                         {
@@ -4900,7 +4876,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Day")
                         {
@@ -4920,7 +4895,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                           
                         }
                         if (individuo_decodificado[i][j - 1].first == "Late")
                         {
@@ -4940,7 +4914,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                         if (individuo_decodificado[i][j - 1].first == "Night")
                         {
@@ -4961,7 +4934,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
                                     }
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -4989,7 +4961,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado(vect
 vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_2(vector<vector<pair<double, double>>> &individuo_codificado)
 {
 
-    
     individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
     int posicao = 0;
     double razao = 0;
@@ -5045,7 +5016,6 @@ vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_2(ve
 vector<vector<pair<string, string>>> BRKGA::decodificar_individuo_ponderado_2_sol(vector<vector<pair<double, double>>> &individuo_codificado, int &sol_alocacoes)
 {
 
-   
     individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
     int posicao = 0;
     double razao = 0;
@@ -5311,8 +5281,6 @@ int BRKGA::funcao_avaliacao_minimo_completa(vector<vector<pair<string, string>>>
                     }
                 }
             }
-
-            
         }
         for (int h = 0; h < 16; h++)
         {
@@ -5327,10 +5295,9 @@ int BRKGA::funcao_avaliacao_minimo_completa(vector<vector<pair<string, string>>>
             }
             turno_funcao[h] = 0;
         }
-        
     }
 
-    custo = (requerimento_minimo * 60) + (requerimento_otimo *30);
+    custo = (requerimento_minimo * 60) + (requerimento_otimo * 30);
     return custo;
 }
 
@@ -5432,8 +5399,6 @@ void BRKGA::funcao_avaliacao_colunas(vector<vector<pair<string, string>>> &indiv
                     }
                 }
             }
-
-           
         }
         for (int h = 0; h < 16; h++)
         {
@@ -5448,44 +5413,41 @@ void BRKGA::funcao_avaliacao_colunas(vector<vector<pair<string, string>>> &indiv
             }
             turno_funcao[h] = 0;
         }
-         custo_colunas[i] = ((requerimento_minimo * 60) + (requerimento_otimo * 30));
-         requerimento_minimo = 0;
-         requerimento_otimo = 0;
+        custo_colunas[i] = ((requerimento_minimo * 60) + (requerimento_otimo * 30));
+        requerimento_minimo = 0;
+        requerimento_otimo = 0;
     }
-
 }
 
 void BRKGA::solucao_gulosa()
 {
     individuo_decodificado = vector<vector<pair<string, string>>>(cn->vetor_qualificacao.size(), vector<pair<string, string>>(7));
     int aux = 0;
-    
+
     for (int i = cn->vetor_qualificacao.size() - 1; i >= 0; i--)
     {
         for (int j = 0; j < 7; j++)
         {
-            
+
             individuo_decodificado = trocas_2(i, j, individuo_decodificado);
         }
     }
 
-   
     for (int j = 0; j < 3; j++)
     {
-       
+
         if (j == 0)
         {
             individuo_decodificado = primeira_melhora_2(individuo_decodificado);
-            
         }
-       
+
         individuo_decodificado = trocar_qualificacao_turno(individuo_decodificado);
 
         aux = funcao_avaliacao_minimo_completa(individuo_decodificado);
-       
+
         if (aux == 0)
         {
-           
+
             j = 3;
         }
     }
@@ -5493,7 +5455,6 @@ void BRKGA::solucao_gulosa()
     individuo_decodificado = procura_melhor_vizinho(individuo_decodificado);
     aux = funcao_avaliacao(individuo_decodificado);
     cout << "Custo da solucao = " << aux << endl;
-
 }
 
 void BRKGA::solucao_gulosa_2()
@@ -5509,7 +5470,7 @@ void BRKGA::solucao_gulosa_2()
     {
         if (cn->vetor_qualificacao[h].contract == "FullTime")
         {
-            
+
             contratos[i] = h;
             i++;
         }
@@ -5519,7 +5480,7 @@ void BRKGA::solucao_gulosa_2()
     {
         if (cn->vetor_qualificacao[h].contract == "PartTime")
         {
-            
+
             contratos[i] = h;
             i++;
         }
@@ -5529,18 +5490,17 @@ void BRKGA::solucao_gulosa_2()
     {
         if (cn->vetor_qualificacao[h].contract == "HalfTime")
         {
-            
+
             contratos[i] = h;
             i++;
         }
     }
 
-    
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
         for (int j = 0; j < 7; j++)
         {
-            
+
             individuo_decodificado = trocas_2(contratos[i], j, individuo_decodificado);
         }
     }
@@ -5553,7 +5513,7 @@ vector<vector<pair<string, string>>> BRKGA::trocas(int i, int j, vector<vector<p
 {
     int aux, fitness;
     fitness = funcao_avaliacao_minimo_completa(individuo_decodificado);
-    
+
     for (int p = 1; p < cn->vetor_none.size(); p++)
     {
         individuo_decodificado[i][j].first = cn->vetor_none[p];
@@ -5578,14 +5538,13 @@ vector<vector<pair<string, string>>> BRKGA::trocas(int i, int j, vector<vector<p
 
 vector<vector<pair<string, string>>> BRKGA::trocas_2(int i, int j, vector<vector<pair<string, string>>> &individuo_decodificado)
 {
-    
+
     int aux, fitness;
     pair<string, string> atribuicoes;
     individuo_decodificado[i][j].first = "None";
     individuo_decodificado[i][j].second = "None";
 
     fitness = funcao_avaliacao(individuo_decodificado);
-    
 
     for (int p = 0; p < cn->vetor_none.size(); p++)
     {
@@ -5594,7 +5553,7 @@ vector<vector<pair<string, string>>> BRKGA::trocas_2(int i, int j, vector<vector
         {
             individuo_decodificado[i][j].second = cn->vetor_qualificacao[i].funcoes[h];
             aux = funcao_avaliacao(individuo_decodificado);
-   
+
             if (aux <= fitness)
             {
                 fitness = aux;
@@ -5633,17 +5592,16 @@ vector<vector<pair<string, string>>> BRKGA::procura_melhor_vizinho(vector<vector
         count++;
         melhora = false;
 
-  
         for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
         {
             for (int j = 0; j < 7; j++)
             {
 
                 fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-       
+
                 salvar.first = individuo_decodificado[i][j].first;
                 salvar.second = individuo_decodificado[i][j].second;
-                
+
                 for (int p = 0; p < cn->vetor_none.size(); p++)
                 {
                     individuo_decodificado[i][j].first = cn->vetor_none[p];
@@ -5651,7 +5609,7 @@ vector<vector<pair<string, string>>> BRKGA::procura_melhor_vizinho(vector<vector
                     {
                         individuo_decodificado[i][j].second = cn->vetor_qualificacao[i].funcoes[h];
                         fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-      
+
                         if (fitness_linha < fitness)
                         {
                             fitness = fitness_linha;
@@ -5665,13 +5623,13 @@ vector<vector<pair<string, string>>> BRKGA::procura_melhor_vizinho(vector<vector
                 }
 
                 individuo_decodificado[i][j].first = salvar.first;
-                individuo_decodificado[i][j].second = salvar.second;   
+                individuo_decodificado[i][j].second = salvar.second;
             }
         }
 
         if (melhora == true)
         {
-            
+
             individuo_decodificado[posicoes.first][posicoes.second].first = atribuicoes.first;
             individuo_decodificado[posicoes.first][posicoes.second].second = atribuicoes.second;
         }
@@ -5687,17 +5645,16 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora(vector<vector<pair<
     sorteio = vector<pair<int, int>>(cn->vetor_qualificacao.size() * 7);
     pair<string, string> atribuicoes;
 
-
     for (int i = 0; i < cn->vetor_qualificacao.size(); i++)
     {
         for (int j = 0; j < 7; j++)
         {
 
             fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-        
+
             atribuicoes.first = individuo_decodificado[i][j].first;
             atribuicoes.second = individuo_decodificado[i][j].second;
-            
+
             for (int p = 0; p < cn->vetor_none.size(); p++)
             {
                 individuo_decodificado[i][j].first = cn->vetor_none[p];
@@ -5705,12 +5662,12 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora(vector<vector<pair<
                 {
                     individuo_decodificado[i][j].second = cn->vetor_qualificacao[i].funcoes[h];
                     fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-            
+
                     if (fitness_linha < fitness)
                     {
-               
+
                         fitness = fitness_linha;
-                      
+
                         atribuicoes.first = individuo_decodificado[i][j].first;
                         atribuicoes.second = individuo_decodificado[i][j].second;
                     }
@@ -5750,17 +5707,16 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora_aleatorio(vector<ve
         }
     }
     random_shuffle(sorteio.begin(), sorteio.end());
-   
 
     while (sorteio.size() != 0)
     {
         i = sorteio[0].first;
         j = sorteio[0].second;
         fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, sorteio[0].first, sorteio[0].second);
-     
+
         atribuicoes.first = individuo_decodificado[i][j].first;
         atribuicoes.second = individuo_decodificado[i][j].second;
-        
+
         for (int p = 0; p < cn->vetor_none.size(); p++)
         {
             individuo_decodificado[i][j].first = cn->vetor_none[p];
@@ -5768,12 +5724,12 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora_aleatorio(vector<ve
             {
                 individuo_decodificado[i][j].second = cn->vetor_qualificacao[i].funcoes[h];
                 fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, sorteio[0].first, sorteio[0].second);
-    
+
                 if (fitness_linha < fitness)
                 {
-                   
+
                     fitness = fitness_linha;
-                   
+
                     atribuicoes.first = individuo_decodificado[i][j].first;
                     atribuicoes.second = individuo_decodificado[i][j].second;
                 }
@@ -5830,10 +5786,10 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora_2_aleatorio(vector<
             j = sorteio[0].second;
 
             fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-   
+
             atribuicoes.first = individuo_decodificado[i][j].first;
             atribuicoes.second = individuo_decodificado[i][j].second;
-            
+
             for (int p = 0; p < cn->vetor_none.size(); p++)
             {
                 individuo_decodificado[i][j].first = cn->vetor_none[p];
@@ -5841,12 +5797,12 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora_2_aleatorio(vector<
                 {
                     individuo_decodificado[i][j].second = cn->vetor_qualificacao[i].funcoes[h];
                     fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-                
+
                     if (fitness_linha < fitness)
                     {
-                        
+
                         fitness = fitness_linha;
-                        
+
                         atribuicoes.first = individuo_decodificado[i][j].first;
                         atribuicoes.second = individuo_decodificado[i][j].second;
                         melhora = true;
@@ -5911,13 +5867,14 @@ bool BRKGA::primeira_melhora_2_aleatorio_vnd(vector<vector<pair<string, string>>
 
         atribuicoes.first = individuo_decodificado[i][j].first;
         atribuicoes.second = individuo_decodificado[i][j].second;
-        
+
         random_shuffle(vetor_none.begin(), vetor_none.end());
         for (int p = 0; p < cn->vetor_none.size(); p++)
         {
             individuo_decodificado[i][j].first = vetor_none[p];
             vetor_qualificacoes = vector<string>(cn->vetor_qualificacao[i].num_funcoes);
-            for(int t = 0; t < cn->vetor_qualificacao[i].num_funcoes; t++){
+            for (int t = 0; t < cn->vetor_qualificacao[i].num_funcoes; t++)
+            {
                 vetor_qualificacoes[t] = cn->vetor_qualificacao[i].funcoes[t];
             }
             random_shuffle(vetor_qualificacoes.begin(), vetor_qualificacoes.end());
@@ -5929,15 +5886,13 @@ bool BRKGA::primeira_melhora_2_aleatorio_vnd(vector<vector<pair<string, string>>
 
                 if (fitness_linha < fitness)
                 {
-                 
 
                     atribuicoes.first = individuo_decodificado[i][j].first;
                     atribuicoes.second = individuo_decodificado[i][j].second;
                     melhora = true;
-                
+
                     random_shuffle(sorteio.begin(), sorteio.end());
                     z = 0;
-               
                 }
                 else
                 {
@@ -5982,7 +5937,6 @@ bool BRKGA::primeira_melhora_2_aleatorio_vnd_thalles(vector<vector<pair<string, 
         }
     }
 
-   
     fitnessAnterior = funcao_avaliacao(individuo_decodificado);
 
     random_shuffle(sorteio.begin(), sorteio.end());
@@ -6003,7 +5957,7 @@ bool BRKGA::primeira_melhora_2_aleatorio_vnd_thalles(vector<vector<pair<string, 
             random_shuffle(vetor_qualificacoes.begin(), vetor_qualificacoes.end());
             for (int h = 0; h < cn->vetor_qualificacao[i].num_funcoes; h++)
             {
-                
+
                 individuo_decodificado[i][j].second = vetor_qualificacoes[h];
                 fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
 
@@ -6017,16 +5971,16 @@ bool BRKGA::primeira_melhora_2_aleatorio_vnd_thalles(vector<vector<pair<string, 
 
                     return melhora;
                 }
-            }  
+            }
         }
-        if(melhora == false){
+        if (melhora == false)
+        {
             individuo_decodificado[i][j].first = atribuicoes.first;
             individuo_decodificado[i][j].second = atribuicoes.second;
         }
-      
-   sorteio.erase(sorteio.begin());
-    }
 
+        sorteio.erase(sorteio.begin());
+    }
 }
 
 bool BRKGA::primeira_melhora_2_turno_aleatorio(vector<vector<pair<string, string>>> &individuo_decodificado)
@@ -6059,8 +6013,6 @@ bool BRKGA::primeira_melhora_2_turno_aleatorio(vector<vector<pair<string, string
     }
     sorteio_aux = sorteio;
 
-
-
     random_shuffle(sorteio.begin(), sorteio.end());
     melhora = false;
     while (sorteio.size() != 0)
@@ -6068,19 +6020,18 @@ bool BRKGA::primeira_melhora_2_turno_aleatorio(vector<vector<pair<string, string
         i = sorteio[0].first;
         j = sorteio[0].second;
 
-     
         atribuicoes.first = individuo_decodificado[i][j].first;
         fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
-        
+
         for (int p = 0; p < cn->vetor_none.size(); p++)
         {
             individuo_decodificado[i][j].first = cn->vetor_none[p];
             fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
             if (fitness_linha < fitness)
             {
-                
+
                 fitness = fitness_linha;
-                
+
                 atribuicoes.first = individuo_decodificado[i][j].first;
 
                 melhora = true;
@@ -6130,8 +6081,6 @@ bool BRKGA::primeira_melhora_2_qualificacao_aleatorio(vector<vector<pair<string,
     }
     sorteio_aux = sorteio;
 
-
-
     random_shuffle(sorteio.begin(), sorteio.end());
     melhora = false;
     while (sorteio.size() != 0)
@@ -6150,9 +6099,9 @@ bool BRKGA::primeira_melhora_2_qualificacao_aleatorio(vector<vector<pair<string,
 
             if (fitness_linha < fitness)
             {
-                
+
                 fitness = fitness_linha;
-                
+
                 atribuicoes.second = individuo_decodificado[i][j].second;
                 melhora = true;
                 h = cn->vetor_qualificacao[i].num_funcoes;
@@ -6176,9 +6125,9 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio(vector<vector<pair<string,
     int fitness, fitness_linha, inicio_corte, limite, tam_corte, fitnessAnterior, fitnessFinal;
     pair<string, string> atribuicoes;
     vector<vector<vector<pair<string, string>>>> individuos_antes_troca;
-   
+
     individuos_antes_troca = vector<vector<vector<pair<string, string>>>>(2, vector<vector<pair<string, string>>>(1, vector<pair<string, string>>(7)));
-   
+
     vector<Vetor_compatibilidade> compatibilade_aux = vector<Vetor_compatibilidade>(vetor_compatibilidade.size());
     compatibilade_aux = vetor_compatibilidade;
 
@@ -6190,33 +6139,28 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio(vector<vector<pair<string,
     limite = 7 - inicio_corte;
     tam_corte = (mt.randInt() % limite);
     tam_corte++;
-    
+
     for (int i = 0; i < vetor_compatibilidade.size(); i++)
     {
-        
-       fitness = funcao_avaliacao(individuo_decodificado);
-       bool melhora = false;
-       
-        random_shuffle(compatibilade_aux[i].compatibilidade.begin(), compatibilade_aux[i].compatibilidade.end());
 
-  
+        fitness = funcao_avaliacao(individuo_decodificado);
+        bool melhora = false;
+
+        random_shuffle(compatibilade_aux[i].compatibilidade.begin(), compatibilade_aux[i].compatibilidade.end());
 
         for (int j = 0; j < compatibilade_aux[i].compatibilidade.size() - 1; j++)
         {
 
             for (int k = j + 1; k < compatibilade_aux[i].compatibilidade.size(); k++)
             {
-               
 
                 for (int t = inicio_corte; t < inicio_corte + tam_corte; t++)
                 { // salva as informacoes antes do movimento
-                    
+
                     individuos_antes_troca[0][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].first;
                     individuos_antes_troca[0][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second;
                     individuos_antes_troca[1][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[k]][t].first;
                     individuos_antes_troca[1][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[k]][t].second;
-
-                    
                 }
 
                 for (int h = inicio_corte; h < inicio_corte + tam_corte; h++) // faz o swap
@@ -6232,7 +6176,7 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio(vector<vector<pair<string,
                 {
                     melhora = true;
                     fitness = fitness_linha;
-                  
+
                     return melhora;
                 }
                 else
@@ -6243,7 +6187,6 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio(vector<vector<pair<string,
                         individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second = individuos_antes_troca[0][0][t].second;
                         individuo_decodificado[compatibilade_aux[i].compatibilidade[k]][t].first = individuos_antes_troca[1][0][t].first;
                         individuo_decodificado[compatibilade_aux[i].compatibilidade[k]][t].second = individuos_antes_troca[1][0][t].second;
-
                     }
                 }
             }
@@ -6267,7 +6210,7 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio_2(vector<vector<pair<strin
     int fitness, fitness_linha, inicio_corte, limite, tam_corte, fitnessAnterior, fitnessFinal;
     pair<string, string> atribuicoes;
     vector<vector<vector<pair<string, string>>>> individuos_antes_troca;
-    
+
     individuos_antes_troca = vector<vector<vector<pair<string, string>>>>(2, vector<vector<pair<string, string>>>(1, vector<pair<string, string>>(7)));
     vector<Vetor_compatibilidade> compatibilade_aux = vector<Vetor_compatibilidade>(vetor_compatibilidade.size());
     compatibilade_aux = vetor_compatibilidade;
@@ -6279,76 +6222,64 @@ bool BRKGA::primeira_melhora_2_turno_blocos_aleatorio_2(vector<vector<pair<strin
     tam_corte = (mt.randInt() % limite);
     tam_corte++;
 
-    
     for (int i = 0; i < vetor_compatibilidade.size(); i++)
     {
-  
-        
+
         random_shuffle(compatibilade_aux[i].compatibilidade.begin(), compatibilade_aux[i].compatibilidade.end());
 
-        
-         
         for (int j = 0; j < compatibilade_aux[i].compatibilidade.size() - 1; j++)
         {
             fitness = funcao_avaliacao(individuo_decodificado);
-            
-           for (int t = inicio_corte; t < inicio_corte + tam_corte; t++)
-                { // salva as informacoes antes do mobiemtno
-                    individuos_antes_troca[0][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].first;
-                    individuos_antes_troca[0][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second;
-                    individuos_antes_troca[1][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].first;
-                    individuos_antes_troca[1][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[j +1]][t].second; 
-                }
-            
-             for (int h = inicio_corte; h < inicio_corte + tam_corte; h++) // faz o swap
+
+            for (int t = inicio_corte; t < inicio_corte + tam_corte; t++)
+            { // salva as informacoes antes do mobiemtno
+                individuos_antes_troca[0][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].first;
+                individuos_antes_troca[0][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second;
+                individuos_antes_troca[1][0][t].first = individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].first;
+                individuos_antes_troca[1][0][t].second = individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].second;
+            }
+
+            for (int h = inicio_corte; h < inicio_corte + tam_corte; h++) // faz o swap
+            {
+                individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][h].first = individuos_antes_troca[1][0][h].first;
+                individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][h].second = individuos_antes_troca[1][0][h].second;
+                individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][h].first = individuos_antes_troca[0][0][h].first;
+                individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][h].second = individuos_antes_troca[0][0][h].second;
+            }
+
+            fitness_linha = funcao_avaliacao(individuo_decodificado);
+            if (fitness_linha < fitness)
+            {
+                melhora = true;
+                random_shuffle(compatibilade_aux.begin(), compatibilade_aux.end());
+                inicio_corte = (mt.randInt() % 7);
+                limite = 7 - inicio_corte;
+                tam_corte = (mt.randInt() % limite);
+                tam_corte++;
+
+                i = -1;
+                j = -1;
+                break;
+            }
+            else
+            { // desfaz o movimento
+                for (int t = inicio_corte; t < inicio_corte + tam_corte; t++)
                 {
-                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][h].first = individuos_antes_troca[1][0][h].first;
-                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][h].second = individuos_antes_troca[1][0][h].second;
-                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][h].first = individuos_antes_troca[0][0][h].first;
-                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][h].second = individuos_antes_troca[0][0][h].second;
-                }
 
-                fitness_linha = funcao_avaliacao(individuo_decodificado);
-                if (fitness_linha < fitness)
-                {
-                    melhora = true;
-                    random_shuffle(compatibilade_aux.begin(), compatibilade_aux.end());
-                    inicio_corte = (mt.randInt() % 7);
-                    limite = 7 - inicio_corte;
-                    tam_corte = (mt.randInt() % limite);
-                    tam_corte++;
-                    
-                    i = -1;
-                    j = -1;
-                    break;
-                    
-
-                    
+                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].first = individuos_antes_troca[0][0][t].first;
+                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second = individuos_antes_troca[0][0][t].second;
+                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].first = individuos_antes_troca[1][0][t].first;
+                    individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].second = individuos_antes_troca[1][0][t].second;
                 }
-                else
-                { // desfaz o movimento
-                    for (int t = inicio_corte; t < inicio_corte + tam_corte; t++)
-                    {
-                        
-                        individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].first = individuos_antes_troca[0][0][t].first;
-                        individuo_decodificado[compatibilade_aux[i].compatibilidade[j]][t].second = individuos_antes_troca[0][0][t].second;
-                        individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].first = individuos_antes_troca[1][0][t].first;
-                        individuo_decodificado[compatibilade_aux[i].compatibilidade[j + 1]][t].second = individuos_antes_troca[1][0][t].second;
-
-                    }
-                }
-                   if(melhora){
-           
-                }
+            }
+            if (melhora)
+            {
+            }
         }
-     
     }
-
 
     return melhora;
 }
-
-
 
 bool BRKGA::primeira_melhora_2_troca_pares(vector<vector<pair<string, string>>> &individuo_decodificado)
 {
@@ -6400,7 +6331,7 @@ bool BRKGA::primeira_melhora_2_troca_pares(vector<vector<pair<string, string>>> 
         {
             melhora = true;
             fitness = fitness_linha;
-           
+
             return melhora;
         }
         else
@@ -6456,14 +6387,12 @@ vector<vector<pair<string, string>>> BRKGA::folga_aleatorio(vector<vector<pair<s
         fitness = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
         atribuicoes.first = individuo_decodificado[i][j].first;
 
-        
-
         individuo_decodificado[i][j].first = "None";
         fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
         if (fitness_linha < fitness)
         {
             fitness = fitness_linha;
-            
+
             atribuicoes.first = individuo_decodificado[i][j].first;
             melhora = true;
         }
@@ -6527,7 +6456,7 @@ vector<vector<pair<string, string>>> BRKGA::turno_aleatorio(vector<vector<pair<s
             if (fitness_linha < fitness)
             {
                 fitness = fitness_linha;
-                
+
                 atribuicoes.first = individuo_decodificado[i][j].first;
 
                 melhora = true;
@@ -6576,7 +6505,6 @@ vector<vector<pair<string, string>>> BRKGA::qualificacao_aleatorio(vector<vector
     }
     sorteio_aux = sorteio;
 
-
     sorteio = sorteio_aux;
     random_shuffle(sorteio.begin(), sorteio.end());
     melhora = false;
@@ -6593,7 +6521,7 @@ vector<vector<pair<string, string>>> BRKGA::qualificacao_aleatorio(vector<vector
             fitness_linha = funcao_avaliacao_linha_coluna(individuo_decodificado, i, j);
             if (fitness_linha < fitness)
             {
-                
+
                 fitness = fitness_linha;
                 atribuicoes.second = individuo_decodificado[i][j].second;
                 melhora = true;
@@ -6614,7 +6542,7 @@ vector<vector<pair<string, string>>> BRKGA::qualificacao_aleatorio(vector<vector
 
 vector<vector<pair<double, double>>> BRKGA::VND(vector<vector<pair<double, double>>> &individuo_codificado)
 {
-    
+
     int custo;
     bool melhora = false;
     int count = 0;
@@ -6622,14 +6550,14 @@ vector<vector<pair<double, double>>> BRKGA::VND(vector<vector<pair<double, doubl
 
     int moeda = mt.randInt() % 2;
     individuo_decodificado = decodificar_individuo_ponderado_2(individuo_codificado);
-    
+
     while (k <= r)
     {
         if (moeda == 0)
         {
             if (k == 1)
             {
-                
+
                 melhora = primeira_melhora_2_aleatorio_vnd(individuo_decodificado);
                 if (melhora == true)
                 {
@@ -6670,14 +6598,14 @@ vector<vector<pair<double, double>>> BRKGA::VND(vector<vector<pair<double, doubl
             k++;
         }
     }
- 
+
     individuo_codificado = codificador_ponderado_2(individuo_decodificado);
     return individuo_codificado;
 }
 
 vector<vector<pair<double, double>>> BRKGA::VND_inicial(vector<vector<pair<double, double>>> &individuo_codificado)
 {
-    
+
     int custo;
     bool melhora;
     int count = 0;
@@ -6690,14 +6618,14 @@ vector<vector<pair<double, double>>> BRKGA::VND_inicial(vector<vector<pair<doubl
             melhora = primeira_melhora_2_aleatorio_vnd_thalles(individuo_decodificado);
             if (melhora == true)
             {
-                count++; 
+                count++;
                 k = 1;
             }
             else
             {
                 k++;
             }
-        }  
+        }
     }
 
     individuo_codificado = codificador_ponderado_2(individuo_decodificado);
@@ -7353,7 +7281,7 @@ vector<vector<pair<string, string>>> BRKGA::primeira_melhora_2(vector<vector<pai
                         if (fitness_linha < fitness)
                         {
                             fitness = fitness_linha;
-                            
+
                             atribuicoes.first = individuo_decodificado[i][j].first;
                             atribuicoes.second = individuo_decodificado[i][j].second;
                             melhora = true;
@@ -7888,9 +7816,9 @@ int BRKGA::funcao_avaliacao_2(vector<vector<pair<string, string>>> &individuo_de
             {
                 if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
                 {
-                     if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
                     {
-                        
+
                         if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
                         {
                             s7++;
@@ -7924,9 +7852,9 @@ int BRKGA::funcao_avaliacao_2(vector<vector<pair<string, string>>> &individuo_de
             {
                 if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
                 {
-                     if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
                     {
-                        
+
                         if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
                         {
                             s7++;
@@ -8116,17 +8044,16 @@ int BRKGA::funcao_avaliacao_2(vector<vector<pair<string, string>>> &individuo_de
     dias_consecutivos = (dias_consecutivos * 30);
     dias_folgas = (dias_folgas * 30);
     turnos_consecutivos = (turnos_consecutivos * 15);
-    if (aux <= cn->num_semanas/2)
+    if (aux <= cn->num_semanas / 2)
     {
         s7 = (s7 * 30);
         dias_global = (dias_global * 20);
     }
-    else{
+    else
+    {
         s7 = (s7 * 30);
         dias_global = (dias_global * 20);
     }
-        
-
 
     custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
     return custo_total;
@@ -8157,7 +8084,6 @@ int BRKGA::funcao_avaliacao_linha(vector<vector<pair<string, string>>> &individu
     int requerimento_minimo = 0;
     vector<int> turno_funcao;
     turno_funcao = vector<int>(16); // coloca todas as posições do vetor com valor 0
-   
 
     for (int h = 0; h < custom_out.size(); h++)
     {
@@ -8313,10 +8239,10 @@ int BRKGA::funcao_avaliacao_linha(vector<vector<pair<string, string>>> &individu
                 {
                     for (int h = 0; h < cn->vetor_contratos.size(); h++)
                     {
-                        
+
                         if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                         {
-                            
+
                             if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
                             {
                                 dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
@@ -8364,7 +8290,6 @@ int BRKGA::funcao_avaliacao_linha(vector<vector<pair<string, string>>> &individu
                                 dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
                             }
                             count_folgas = 0;
-                            
                         }
                     }
                 }
@@ -8531,1353 +8456,669 @@ int BRKGA::funcao_avaliacao_linha(vector<vector<pair<string, string>>> &individu
                         }
                     }
 
-                    
                     int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
-                    int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux) );
+                    int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux));
 
                     if (count_dias_trabalhados < divisao_first)
                     {
                         dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
-                    if (count_dias_trabalhados > divisao_second)
-                    {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                        
+
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+
+            if (semana_1 == 1)
+            {
+
+                for (int t = 0; t < cn->vetor_contratos.size(); t++)
+                {
+                    if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                    {
+
+                        if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                        {
+                            //s7++;
+                            if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                            {
+                                s7++;
+                            }
+                        }
+
+                        int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
+                        int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas));
+
+                        if (count_dias_trabalhados < divisao_first)
+                        {
+                            dias_global = dias_global + (divisao_first - count_dias_trabalhados);
+                        }
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
+                    }
+                }
+            }
+            count_dias_trabalhados = 0;
         }
 
-        if (semana_1 == 1)
+        int sucessoes = 0;
+        bool contem;
+        for (int i = linha; i <= linha; i++)
         {
-
-            for (int t = 0; t < cn->vetor_contratos.size(); t++)
+            for (int j = 0; j < 7; j++)
             {
-                if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
-                {
-
-                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
-                    {
-                        //s7++;
-                        if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
-                        {
-                            s7++;
-                        }
-                    }
-                   
-                    int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
-                    int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas) );
-
-                    if (count_dias_trabalhados < divisao_first)
-                    {
-                        dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
-                    }
-                    if (count_dias_trabalhados > divisao_second)
-                    {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                        
-                    }
-                    break;
-                }
-            }
-        }
-        count_dias_trabalhados = 0;
-    }
-
-    int sucessoes = 0;
-    bool contem;
-    for (int i = linha; i <= linha; i++)
-    {
-        for (int j = 0; j < 7; j++)
-        {
-            contem = false;
-            if (j == 0)
-            {
-                if (ht->matriz_borda_s[i][1] == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
-
-            if (j != 0)
-            {
-                if (individuo_decodificado[i][j - 1].first == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
-        }
-    }
-
-
-    sucessoes = (sucessoes * 60);
-    requerimento_minimo = (requerimento_minimo * 60);
-    requerimento_otimo = (requerimento_otimo * 30);
-    requisicoes = (requisicoes * 10);
-    fim_semana_completo = (fim_semana_completo * 30);
-    dias_consecutivos = (dias_consecutivos * 30);
-    dias_folgas = (dias_folgas * 30);
-    turnos_consecutivos = (turnos_consecutivos * 15);
-    if (aux <= cn->num_semanas/2)
-    {
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-    else{
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-
-        
-
-    custo_total = s7 + sucessoes + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
-    
-    return custo_total;
-}
-//cout << endl;
-int BRKGA::funcao_avaliacao_linha_coluna(vector<vector<pair<string, string>>> &individuo_decodificado, int linha, int coluna)
-{
-
-    
-    int s7 = 0;
-    int aux = 0;
-    int count_dias_trabalhados = 0;
-    int dias_global = 0;
-
-    int count = 0;
-    int turnos_consecutivos = 0;
-    int count_folgas = 0;
-    int dias_folgas = 0;
-    string turno_anterior;
-    int count_dias_consecutivos = 0;
-    int dias_consecutivos = 0;
-    int count_fim_semana = 0;
-    int count_turnos = 0;
-    int custo_total;
-    int requisicoes = 0;
-    int fim_semana_completo = 0;
-    int requerimento_otimo = 0;
-    int requerimento_minimo = 0;
-    vector<int> turno_funcao;
-    turno_funcao = vector<int>(16); // coloca todas as posições do vetor com valor 0
-    for (int i = 0; i < 16; i++)
-    {
-        turno_funcao[i] = 0;
-    }
-
-    for (int j = 0; j < cn->vetor_qualificacao.size(); j++)
-    {
-        if (individuo_decodificado[j][coluna].first == "Early")
-        {
-            if (individuo_decodificado[j][coluna].second == "HeadNurse")
-            {
-                turno_funcao[0]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Nurse")
-            {
-                turno_funcao[1]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Caretaker")
-            {
-                turno_funcao[2]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Trainee")
-            {
-                turno_funcao[3]++;
-            }
-        }
-
-        if (individuo_decodificado[j][coluna].first == "Day")
-        {
-            if (individuo_decodificado[j][coluna].second == "HeadNurse")
-            {
-                turno_funcao[4]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Nurse")
-            {
-                turno_funcao[5]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Caretaker")
-            {
-                turno_funcao[6]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Trainee")
-            {
-                turno_funcao[7]++;
-            }
-        }
-
-        if (individuo_decodificado[j][coluna].first == "Late")
-        {
-            if (individuo_decodificado[j][coluna].second == "HeadNurse")
-            {
-                turno_funcao[8]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Nurse")
-            {
-                turno_funcao[9]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Caretaker")
-            {
-                turno_funcao[10]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Trainee")
-            {
-                turno_funcao[11]++;
-            }
-        }
-        if (individuo_decodificado[j][coluna].first == "Night")
-        {
-            if (individuo_decodificado[j][coluna].second == "HeadNurse")
-            {
-                turno_funcao[12]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Nurse")
-            {
-                turno_funcao[13]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Caretaker")
-            {
-                turno_funcao[14]++;
-            }
-            if (individuo_decodificado[j][coluna].second == "Trainee")
-            {
-                turno_funcao[15]++;
-            }
-        }
-    }
-
-    for (int h = 0; h < 16; h++)
-    {
-        //fazer aqui o somatorio
-        if (turno_funcao[h] < w0->matriz_requerimentos[h][coluna].first)
-        {
-            requerimento_minimo = (requerimento_minimo + (w0->matriz_requerimentos[h][coluna].first - turno_funcao[h]));
-        }
-
-        if (turno_funcao[h] < w0->matriz_requerimentos[h][coluna].second)
-        {
-            requerimento_otimo = (requerimento_otimo + (w0->matriz_requerimentos[h][coluna].second - turno_funcao[h]));
-        }
-        turno_funcao[h] = 0;
-    }
-
-    for (int h = 0; h < custom_out.size(); h++)
-    {
-        if (isdigit(custom_out[h]))
-        {
-            aux = custom_out[h] - '0';
-            aux = cn->num_semanas - aux;
-        }
-    }
-
-    for (int i = 0; i < w0->matriz_requisicoes.size(); i++)
-    {
-        if (w0->matriz_requisicoes[i][0] == linha)
-        {
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first != "None" && w0->matriz_requisicoes[i][1] == 0)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Early" && w0->matriz_requisicoes[i][1] == 1)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Day" && w0->matriz_requisicoes[i][1] == 2)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Late" && w0->matriz_requisicoes[i][1] == 3)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Night" && w0->matriz_requisicoes[i][1] == 4)
-            {
-                requisicoes++;
-            }
-        }
-    }
-
-    // restricoes s2 e s3 ---- s2-peso 30 resolvida ---- s3 peso 30 a ser resolvida
-    for (int i = linha; i <= linha; i++)
-    {
-        for (int j = 0; j < 7; j++)
-        {
-
-            if (j == 5)
-            {
-                if (cn->vetor_qualificacao[i].contract == "FullTime" && cn->vetor_contratos[0].fim_semana_restricao == 1)
-                {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                }
-
-                if (cn->vetor_qualificacao[i].contract == "PartTime" && cn->vetor_contratos[1].fim_semana_restricao == 1)
-                {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                }
-
-                if (cn->vetor_qualificacao[i].contract == "HalfTime" && cn->vetor_contratos[2].fim_semana_restricao == 1)
-                {
-
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                }
-                if (cn->vetor_qualificacao[i].contract == "20Percent" && cn->vetor_contratos.size() == 4 && cn->vetor_contratos[3].fim_semana_restricao == 1)
-                {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                }
-            }
-
-            if (individuo_decodificado[i][j].first == "None")
-            {
-                count_folgas++;
+                contem = false;
                 if (j == 0)
                 {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (ht->matriz_borda_s[i][1] == "None")
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
                         {
-                            if (ht->matriz_borda_fracas[i][4] < cn->vetor_contratos[h].min_max[2].second)
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
                             {
-                                count_folgas = count_folgas + ht->matriz_borda_fracas[i][4];
-                            }
-                            if (ht->matriz_borda_fracas[i][4] >= cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                count_folgas = count_folgas + cn->vetor_contratos[h].min_max[2].second;
+                                contem = true;
+                                h = cn->vetor_none.size();
                             }
                         }
+                        if (contem == false)
+                            sucessoes++;
                     }
 
-                    // faz a subtração dos turnos que restarem da semana anterior
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (ht->matriz_borda_s[i][1] == "Early")
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
                         {
-                            if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].first)
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
                             {
-                                count_dias_consecutivos = ht->matriz_borda_fracas[i][3];
-                            }
-                            if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                count_dias_consecutivos = cn->vetor_contratos[h].min_max[1].second;
+                                contem = true;
+                                h = cn->vetor_early.size();
                             }
                         }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Day")
+                    {
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Late")
+                    {
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
                     }
                 }
 
-                if (count_dias_consecutivos > 0)
+                if (j != 0)
                 {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (individuo_decodificado[i][j - 1].first == "None")
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
                         {
-                            if (count_dias_consecutivos < cn->vetor_contratos[h].min_max[1].first)
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
                             {
-                                dias_consecutivos = dias_consecutivos + (cn->vetor_contratos[h].min_max[1].first - count_dias_consecutivos);
+                                contem = true;
+                                h = cn->vetor_none.size();
                             }
-                            if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
-                            }
-                            count_dias_consecutivos = 0;
-                            break;
                         }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Early")
+                    {
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
+                        {
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_early.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Day")
+                    {
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Late")
+                    {
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
                     }
                 }
-
-                if (j == 6)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (individuo_decodificado[i][j].first != "None")
-            {
-                count_dias_consecutivos++;
-                if (j == 0)
-                {
-                    count_folgas = ht->matriz_borda_fracas[i][4];
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                count_dias_consecutivos = count_dias_consecutivos + ht->matriz_borda_fracas[i][3];
-                            }
-                            if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                count_dias_consecutivos = count_dias_consecutivos + cn->vetor_contratos[h].min_max[1].second;
-                            }
-                        }
-                    }
-                }
-
-                if (count_folgas > 0)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (count_folgas < cn->vetor_contratos[h].min_max[2].first)
-                            {
-                                dias_folgas = dias_folgas + (cn->vetor_contratos[h].min_max[2].first - count_folgas);
-                            }
-                            if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
-                            }
-                            count_folgas = 0;
-                            
-                        }
-                    }
-                }
-
-                if (j == 6)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (individuo_decodificado[i][j].first != "None")
-            {
-                count_dias_trabalhados++;
-                if (j == 0)
-                {
-                    count_turnos++;
-                    if (ht->matriz_borda_s[i][1] == individuo_decodificado[i][j].first)
-                    {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
-                        {
-                            if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
-                            {
-                                if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.second)
-                                {
-                                    count_turnos = count_turnos + ht->matriz_borda_fracas[i][2];
-                                }
-                                if (ht->matriz_borda_fracas[i][2] >= cn->vetor_sucessoes[h].x.second)
-                                {
-                                    count_turnos = count_turnos + cn->vetor_sucessoes[h].x.second;
-                                }
-                            }
-                        }
-                    }
-
-                    if (ht->matriz_borda_s[i][1] != individuo_decodificado[i][j].first)
-                    {
-                        if (ht->matriz_borda_fracas[i][2] > 0)
-                        {
-                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
-                            {
-                                if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
-                                {
-                                    if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
-                                    {
-                                        turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (individuo_decodificado[i][j].first == turno_anterior)
-                {
-                    count_turnos++;
-                    if (j == 6)
-                    {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
-                        {
-                            if (cn->vetor_sucessoes[h].turno == turno_anterior)
-                            {
-                                if (count_turnos > cn->vetor_sucessoes[h].x.second)
-                                {
-                                    turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (individuo_decodificado[i][j].first != turno_anterior && j != 0)
-                {
-                    for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
-                    {
-                        if (cn->vetor_sucessoes[h].turno == turno_anterior)
-                        {
-                            if (count_turnos < cn->vetor_sucessoes[h].x.first)
-                            {
-                                turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
-                            }
-                            if (count_turnos > cn->vetor_sucessoes[h].x.second)
-                            {
-                                turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
-                            }
-                        }
-                    }
-                    count_turnos = 1;
-                }
-                turno_anterior = individuo_decodificado[i][j].first;
-            }
-
-            if (individuo_decodificado[i][j].first == "None")
-            {
-                if (j == 0)
-                {
-                    if (ht->matriz_borda_fracas[i][2] > 0)
-                    {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
-                        {
-                            if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
-                            {
-                                if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
-                                {
-                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (count_turnos > 0)
-                {
-
-                    for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
-                    {
-                        if (cn->vetor_sucessoes[h].turno == turno_anterior)
-                        {
-
-                            if (count_turnos < cn->vetor_sucessoes[h].x.first)
-                            {
-                                turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
-                            }
-                            if (count_turnos > cn->vetor_sucessoes[h].x.second)
-                            {
-                                turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
-                            }
-                        }
-                    }
-                }
-
-                count_turnos = 0;
-                turno_anterior = individuo_decodificado[i][j].first;
             }
         }
-        count_dias_consecutivos = 0;
-        count_folgas = 0;
-        count_turnos = 0;
-        turno_anterior.erase();
-        //restrição turnos consecutivos
 
-        //restriçao s6
-
-        if (semana_1 == 0)
+        sucessoes = (sucessoes * 60);
+        requerimento_minimo = (requerimento_minimo * 60);
+        requerimento_otimo = (requerimento_otimo * 30);
+        requisicoes = (requisicoes * 10);
+        fim_semana_completo = (fim_semana_completo * 30);
+        dias_consecutivos = (dias_consecutivos * 30);
+        dias_folgas = (dias_folgas * 30);
+        turnos_consecutivos = (turnos_consecutivos * 15);
+        if (aux <= cn->num_semanas / 2)
         {
-
-            for (int t = 0; t < cn->vetor_contratos.size(); t++)
-            {
-                if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
-                {
-                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
-                    {
-                        //s7++;
-                        if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
-                        {
-                            s7++;
-                        }
-                    }
-
-                    
-                    int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
-                    int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux) );
-
-                    if (count_dias_trabalhados < divisao_first)
-                    {
-                        dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
-                    }
-                    if (count_dias_trabalhados > divisao_second)
-                    {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                        
-                    }
-                    break;
-                }
-            }
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
         }
-
-        if (semana_1 == 1)
+        else
         {
-
-            for (int t = 0; t < cn->vetor_contratos.size(); t++)
-            {
-                if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
-                {
-
-                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
-                    {
-                        //s7++;
-                        if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
-                        {
-                            s7++;
-                        }
-                    }
-                    int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
-                    int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas) );
-
-                    if (count_dias_trabalhados < divisao_first)
-                    {
-                        dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
-                    }
-                    if (count_dias_trabalhados > divisao_second)
-                    {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                       
-                    }
-                    break;
-                }
-            }
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
         }
-        count_dias_trabalhados = 0;
+
+        custo_total = s7 + sucessoes + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
+
+        return custo_total;
     }
-
-    int sucessoes = 0;
-    bool contem;
-    for (int i = linha; i <= linha; i++)
-    {
-        for (int j = 0; j < 7; j++)
-        {
-            contem = false;
-            if (j == 0)
-            {
-                if (ht->matriz_borda_s[i][1] == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
-
-            if (j != 0)
-            {
-                if (individuo_decodificado[i][j - 1].first == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
-        }
-    }
-
-    
-    sucessoes = (sucessoes * 60);
-    requerimento_minimo = (requerimento_minimo * 60);
-    requerimento_otimo = (requerimento_otimo * 30);
-    requisicoes = (requisicoes * 10);
-    fim_semana_completo = (fim_semana_completo * 30);
-    dias_consecutivos = (dias_consecutivos * 30);
-    dias_folgas = (dias_folgas * 30);
-    turnos_consecutivos = (turnos_consecutivos * 15);
-    if (aux <= cn->num_semanas/2)
-    {
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-    else{
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-        
-
-    custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
+}    
     //cout << endl;
-    return custo_total;
-}
-
-int BRKGA::funcao_avaliacao_linha_coluna_2(vector<vector<pair<string, string>>> &individuo_decodificado, int linha, vector<int> colunas)
-{
-
-    // int j = coluna;
-    int s7 = 0;
-    int aux = 0;
-    int count_dias_trabalhados = 0;
-    int dias_global = 0;
-
-    int count = 0;
-    int turnos_consecutivos = 0;
-    int count_folgas = 0;
-    int dias_folgas = 0;
-    string turno_anterior;
-    int count_dias_consecutivos = 0;
-    int dias_consecutivos = 0;
-    int count_fim_semana = 0;
-    int count_turnos = 0;
-    int custo_total;
-    int requisicoes = 0;
-    int fim_semana_completo = 0;
-    int requerimento_otimo = 0;
-    int requerimento_minimo = 0;
-    vector<int> turno_funcao;
-    turno_funcao = vector<int>(16); // coloca todas as posições do vetor com valor 0
-    for (int i = 0; i < 16; i++)
+    int BRKGA::funcao_avaliacao_linha_coluna(vector<vector<pair<string, string>>> & individuo_decodificado, int linha, int coluna)
     {
-        turno_funcao[i] = 0;
-    }
 
-for(int i = 0; i < colunas.size(); i++){
-    for (int j = 0; j < cn->vetor_qualificacao.size(); j++)
-    {
-        if (individuo_decodificado[j][colunas[i]].first == "Early")
+        int s7 = 0;
+        int aux = 0;
+        int count_dias_trabalhados = 0;
+        int dias_global = 0;
+
+        int count = 0;
+        int turnos_consecutivos = 0;
+        int count_folgas = 0;
+        int dias_folgas = 0;
+        string turno_anterior;
+        int count_dias_consecutivos = 0;
+        int dias_consecutivos = 0;
+        int count_fim_semana = 0;
+        int count_turnos = 0;
+        int custo_total;
+        int requisicoes = 0;
+        int fim_semana_completo = 0;
+        int requerimento_otimo = 0;
+        int requerimento_minimo = 0;
+        vector<int> turno_funcao;
+        turno_funcao = vector<int>(16); // coloca todas as posições do vetor com valor 0
+        for (int i = 0; i < 16; i++)
         {
-            if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
-            {
-                turno_funcao[0]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Nurse")
-            {
-                turno_funcao[1]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
-            {
-                turno_funcao[2]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Trainee")
-            {
-                turno_funcao[3]++;
-            }
+            turno_funcao[i] = 0;
         }
 
-        if (individuo_decodificado[j][colunas[i]].first == "Day")
+        for (int j = 0; j < cn->vetor_qualificacao.size(); j++)
         {
-            if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
+            if (individuo_decodificado[j][coluna].first == "Early")
             {
-                turno_funcao[4]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Nurse")
-            {
-                turno_funcao[5]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
-            {
-                turno_funcao[6]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Trainee")
-            {
-                turno_funcao[7]++;
-            }
-        }
-
-        if (individuo_decodificado[j][colunas[i]].first == "Late")
-        {
-            if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
-            {
-                turno_funcao[8]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Nurse")
-            {
-                turno_funcao[9]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
-            {
-                turno_funcao[10]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Trainee")
-            {
-                turno_funcao[11]++;
-            }
-        }
-        if (individuo_decodificado[j][colunas[i]].first == "Night")
-        {
-            if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
-            {
-                turno_funcao[12]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Nurse")
-            {
-                turno_funcao[13]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
-            {
-                turno_funcao[14]++;
-            }
-            if (individuo_decodificado[j][colunas[i]].second == "Trainee")
-            {
-                turno_funcao[15]++;
-            }
-        }
-    }
-
-    for (int h = 0; h < 16; h++)
-    {
-        //fazer aqui o somatorio
-        if (turno_funcao[h] < w0->matriz_requerimentos[h][colunas[i]].first)
-        {
-            requerimento_minimo = (requerimento_minimo + (w0->matriz_requerimentos[h][colunas[i]].first - turno_funcao[h]));
-        }
-
-        if (turno_funcao[h] < w0->matriz_requerimentos[h][colunas[i]].second)
-        {
-            requerimento_otimo = (requerimento_otimo + (w0->matriz_requerimentos[h][colunas[i]].second - turno_funcao[h]));
-        }
-        turno_funcao[h] = 0;
-    }
-
-}
-    
-    for (int h = 0; h < custom_out.size(); h++)
-    {
-        if (isdigit(custom_out[h]))
-        {
-            aux = custom_out[h] - '0';
-            aux = cn->num_semanas - aux;
-        }
-    }
-
-    for (int i = 0; i < w0->matriz_requisicoes.size(); i++)
-    {
-        if (w0->matriz_requisicoes[i][0] == linha)
-        {
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first != "None" && w0->matriz_requisicoes[i][1] == 0)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Early" && w0->matriz_requisicoes[i][1] == 1)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Day" && w0->matriz_requisicoes[i][1] == 2)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Late" && w0->matriz_requisicoes[i][1] == 3)
-            {
-                requisicoes++;
-            }
-            if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Night" && w0->matriz_requisicoes[i][1] == 4)
-            {
-                requisicoes++;
-            }
-        }
-    }
-
-    // restricoes s2 e s3 ---- s2-peso 30 resolvida ---- s3 peso 30 a ser resolvida
-    for (int i = linha; i <= linha; i++)
-    {
-        for (int j = 0; j < 7; j++)
-        {
-
-            if (j == 5)
-            {
-                if (cn->vetor_qualificacao[i].contract == "FullTime" && cn->vetor_contratos[0].fim_semana_restricao == 1)
+                if (individuo_decodificado[j][coluna].second == "HeadNurse")
                 {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
+                    turno_funcao[0]++;
                 }
-
-                if (cn->vetor_qualificacao[i].contract == "PartTime" && cn->vetor_contratos[1].fim_semana_restricao == 1)
+                if (individuo_decodificado[j][coluna].second == "Nurse")
                 {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
+                    turno_funcao[1]++;
                 }
-
-                if (cn->vetor_qualificacao[i].contract == "HalfTime" && cn->vetor_contratos[2].fim_semana_restricao == 1)
+                if (individuo_decodificado[j][coluna].second == "Caretaker")
                 {
-
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
+                    turno_funcao[2]++;
                 }
-                if (cn->vetor_qualificacao[i].contract == "20Percent" && cn->vetor_contratos.size() == 4 && cn->vetor_contratos[3].fim_semana_restricao == 1)
+                if (individuo_decodificado[j][coluna].second == "Trainee")
                 {
-                    if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
-                    {
-                        fim_semana_completo++;
-                    }
-                    if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
-                    {
-                        fim_semana_completo++;
-                    }
+                    turno_funcao[3]++;
                 }
             }
 
-            if (individuo_decodificado[i][j].first == "None")
+            if (individuo_decodificado[j][coluna].first == "Day")
             {
-                count_folgas++;
-                if (j == 0)
+                if (individuo_decodificado[j][coluna].second == "HeadNurse")
                 {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    turno_funcao[4]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Nurse")
+                {
+                    turno_funcao[5]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Caretaker")
+                {
+                    turno_funcao[6]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Trainee")
+                {
+                    turno_funcao[7]++;
+                }
+            }
+
+            if (individuo_decodificado[j][coluna].first == "Late")
+            {
+                if (individuo_decodificado[j][coluna].second == "HeadNurse")
+                {
+                    turno_funcao[8]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Nurse")
+                {
+                    turno_funcao[9]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Caretaker")
+                {
+                    turno_funcao[10]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Trainee")
+                {
+                    turno_funcao[11]++;
+                }
+            }
+            if (individuo_decodificado[j][coluna].first == "Night")
+            {
+                if (individuo_decodificado[j][coluna].second == "HeadNurse")
+                {
+                    turno_funcao[12]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Nurse")
+                {
+                    turno_funcao[13]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Caretaker")
+                {
+                    turno_funcao[14]++;
+                }
+                if (individuo_decodificado[j][coluna].second == "Trainee")
+                {
+                    turno_funcao[15]++;
+                }
+            }
+        }
+
+        for (int h = 0; h < 16; h++)
+        {
+            //fazer aqui o somatorio
+            if (turno_funcao[h] < w0->matriz_requerimentos[h][coluna].first)
+            {
+                requerimento_minimo = (requerimento_minimo + (w0->matriz_requerimentos[h][coluna].first - turno_funcao[h]));
+            }
+
+            if (turno_funcao[h] < w0->matriz_requerimentos[h][coluna].second)
+            {
+                requerimento_otimo = (requerimento_otimo + (w0->matriz_requerimentos[h][coluna].second - turno_funcao[h]));
+            }
+            turno_funcao[h] = 0;
+        }
+
+        for (int h = 0; h < custom_out.size(); h++)
+        {
+            if (isdigit(custom_out[h]))
+            {
+                aux = custom_out[h] - '0';
+                aux = cn->num_semanas - aux;
+            }
+        }
+
+        for (int i = 0; i < w0->matriz_requisicoes.size(); i++)
+        {
+            if (w0->matriz_requisicoes[i][0] == linha)
+            {
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first != "None" && w0->matriz_requisicoes[i][1] == 0)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Early" && w0->matriz_requisicoes[i][1] == 1)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Day" && w0->matriz_requisicoes[i][1] == 2)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Late" && w0->matriz_requisicoes[i][1] == 3)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Night" && w0->matriz_requisicoes[i][1] == 4)
+                {
+                    requisicoes++;
+                }
+            }
+        }
+
+        // restricoes s2 e s3 ---- s2-peso 30 resolvida ---- s3 peso 30 a ser resolvida
+        for (int i = linha; i <= linha; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+
+                if (j == 5)
+                {
+                    if (cn->vetor_qualificacao[i].contract == "FullTime" && cn->vetor_contratos[0].fim_semana_restricao == 1)
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
                         {
-                            if (ht->matriz_borda_fracas[i][4] < cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                count_folgas = count_folgas + ht->matriz_borda_fracas[i][4];
-                            }
-                            if (ht->matriz_borda_fracas[i][4] >= cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                count_folgas = count_folgas + cn->vetor_contratos[h].min_max[2].second;
-                            }
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
                         }
                     }
 
-                    // faz a subtração dos turnos que restarem da semana anterior
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (cn->vetor_qualificacao[i].contract == "PartTime" && cn->vetor_contratos[1].fim_semana_restricao == 1)
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
                         {
-                            if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].first)
-                            {
-                                count_dias_consecutivos = ht->matriz_borda_fracas[i][3];
-                            }
-                            if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                count_dias_consecutivos = cn->vetor_contratos[h].min_max[1].second;
-                            }
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+
+                    if (cn->vetor_qualificacao[i].contract == "HalfTime" && cn->vetor_contratos[2].fim_semana_restricao == 1)
+                    {
+
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+                    if (cn->vetor_qualificacao[i].contract == "20Percent" && cn->vetor_contratos.size() == 4 && cn->vetor_contratos[3].fim_semana_restricao == 1)
+                    {
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
                         }
                     }
                 }
 
-                if (count_dias_consecutivos > 0)
+                if (individuo_decodificado[i][j].first == "None")
                 {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    count_folgas++;
+                    if (j == 0)
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
                         {
-                            if (count_dias_consecutivos < cn->vetor_contratos[h].min_max[1].first)
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                dias_consecutivos = dias_consecutivos + (cn->vetor_contratos[h].min_max[1].first - count_dias_consecutivos);
+                                if (ht->matriz_borda_fracas[i][4] < cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    count_folgas = count_folgas + ht->matriz_borda_fracas[i][4];
+                                }
+                                if (ht->matriz_borda_fracas[i][4] >= cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    count_folgas = count_folgas + cn->vetor_contratos[h].min_max[2].second;
+                                }
                             }
-                            if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
+                        }
+
+                        // faz a subtração dos turnos que restarem da semana anterior
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
+                                if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].first)
+                                {
+                                    count_dias_consecutivos = ht->matriz_borda_fracas[i][3];
+                                }
+                                if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    count_dias_consecutivos = cn->vetor_contratos[h].min_max[1].second;
+                                }
                             }
-                            count_dias_consecutivos = 0;
-                            break;
                         }
                     }
-                }
 
-                if (j == 6)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (count_dias_consecutivos > 0)
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
                         {
-                            
-                            if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
+                                if (count_dias_consecutivos < cn->vetor_contratos[h].min_max[1].first)
+                                {
+                                    dias_consecutivos = dias_consecutivos + (cn->vetor_contratos[h].min_max[1].first - count_dias_consecutivos);
+                                }
+                                if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
+                                }
+                                count_dias_consecutivos = 0;
                                 break;
                             }
                         }
                     }
-                }
-            }
 
-            if (individuo_decodificado[i][j].first != "None")
-            {
-                count_dias_consecutivos++;
-                if (j == 0)
-                {
-                    count_folgas = ht->matriz_borda_fracas[i][4];
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                    if (j == 6)
                     {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
                         {
-                            if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].second)
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                count_dias_consecutivos = count_dias_consecutivos + ht->matriz_borda_fracas[i][3];
-                            }
-                            if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                count_dias_consecutivos = count_dias_consecutivos + cn->vetor_contratos[h].min_max[1].second;
-                            }
-                        }
-                    }
-                }
-
-                if (count_folgas > 0)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (count_folgas < cn->vetor_contratos[h].min_max[2].first)
-                            {
-                                dias_folgas = dias_folgas + (cn->vetor_contratos[h].min_max[2].first - count_folgas);
-                            }
-                            if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
-                            {
-                                dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
-                            }
-                            count_folgas = 0;
-                            
-                        }
-                    }
-                }
-
-                if (j == 6)
-                {
-                    for (int h = 0; h < cn->vetor_contratos.size(); h++)
-                    {
-                        if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
-                        {
-                            if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
-                            {
-                                dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (individuo_decodificado[i][j].first != "None")
-            {
-                count_dias_trabalhados++;
-                if (j == 0)
-                {
-                    count_turnos++;
-                    if (ht->matriz_borda_s[i][1] == individuo_decodificado[i][j].first)
-                    {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
-                        {
-                            if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
-                            {
-                                if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.second)
+                                if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
                                 {
-                                    count_turnos = count_turnos + ht->matriz_borda_fracas[i][2];
+                                    dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
+                                    break;
                                 }
-                                if (ht->matriz_borda_fracas[i][2] >= cn->vetor_sucessoes[h].x.second)
+                            }
+                        }
+                    }
+                }
+
+                if (individuo_decodificado[i][j].first != "None")
+                {
+                    count_dias_consecutivos++;
+                    if (j == 0)
+                    {
+                        count_folgas = ht->matriz_borda_fracas[i][4];
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].second)
                                 {
-                                    count_turnos = count_turnos + cn->vetor_sucessoes[h].x.second;
+                                    count_dias_consecutivos = count_dias_consecutivos + ht->matriz_borda_fracas[i][3];
+                                }
+                                if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    count_dias_consecutivos = count_dias_consecutivos + cn->vetor_contratos[h].min_max[1].second;
                                 }
                             }
                         }
                     }
 
-                    if (ht->matriz_borda_s[i][1] != individuo_decodificado[i][j].first)
+                    if (count_folgas > 0)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (count_folgas < cn->vetor_contratos[h].min_max[2].first)
+                                {
+                                    dias_folgas = dias_folgas + (cn->vetor_contratos[h].min_max[2].first - count_folgas);
+                                }
+                                if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
+                                }
+                                count_folgas = 0;
+                            }
+                        }
+                    }
+
+                    if (j == 6)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (individuo_decodificado[i][j].first != "None")
+                {
+                    count_dias_trabalhados++;
+                    if (j == 0)
+                    {
+                        count_turnos++;
+                        if (ht->matriz_borda_s[i][1] == individuo_decodificado[i][j].first)
+                        {
+                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                            {
+                                if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                                {
+                                    if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        count_turnos = count_turnos + ht->matriz_borda_fracas[i][2];
+                                    }
+                                    if (ht->matriz_borda_fracas[i][2] >= cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        count_turnos = count_turnos + cn->vetor_sucessoes[h].x.second;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ht->matriz_borda_s[i][1] != individuo_decodificado[i][j].first)
+                        {
+                            if (ht->matriz_borda_fracas[i][2] > 0)
+                            {
+                                for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                                {
+                                    if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                                    {
+                                        if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
+                                        {
+                                            turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (individuo_decodificado[i][j].first == turno_anterior)
+                    {
+                        count_turnos++;
+                        if (j == 6)
+                        {
+                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                            {
+                                if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                                {
+                                    if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (individuo_decodificado[i][j].first != turno_anterior && j != 0)
+                    {
+                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
+                        {
+                            if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                            {
+                                if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                }
+                                if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                }
+                            }
+                        }
+                        count_turnos = 1;
+                    }
+                    turno_anterior = individuo_decodificado[i][j].first;
+                }
+
+                if (individuo_decodificado[i][j].first == "None")
+                {
+                    if (j == 0)
                     {
                         if (ht->matriz_borda_fracas[i][2] > 0)
                         {
@@ -9893,17 +9134,18 @@ for(int i = 0; i < colunas.size(); i++){
                             }
                         }
                     }
-                }
-
-                if (individuo_decodificado[i][j].first == turno_anterior)
-                {
-                    count_turnos++;
-                    if (j == 6)
+                    if (count_turnos > 0)
                     {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+
+                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
                         {
                             if (cn->vetor_sucessoes[h].turno == turno_anterior)
                             {
+
+                                if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                }
                                 if (count_turnos > cn->vetor_sucessoes[h].x.second)
                                 {
                                     turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
@@ -9911,328 +9153,990 @@ for(int i = 0; i < colunas.size(); i++){
                             }
                         }
                     }
+
+                    count_turnos = 0;
+                    turno_anterior = individuo_decodificado[i][j].first;
+                }
+            }
+            count_dias_consecutivos = 0;
+            count_folgas = 0;
+            count_turnos = 0;
+            turno_anterior.erase();
+            //restrição turnos consecutivos
+
+            //restriçao s6
+
+            if (semana_1 == 0)
+            {
+
+                for (int t = 0; t < cn->vetor_contratos.size(); t++)
+                {
+                    if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                    {
+                        if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                        {
+                            //s7++;
+                            if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                            {
+                                s7++;
+                            }
+                        }
+
+                        int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
+                        int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux));
+
+                        if (count_dias_trabalhados < divisao_first)
+                        {
+                            dias_global = dias_global + (divisao_first - count_dias_trabalhados);
+                        }
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (semana_1 == 1)
+            {
+
+                for (int t = 0; t < cn->vetor_contratos.size(); t++)
+                {
+                    if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                    {
+
+                        if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                        {
+                            //s7++;
+                            if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                            {
+                                s7++;
+                            }
+                        }
+                        int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
+                        int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas));
+
+                        if (count_dias_trabalhados < divisao_first)
+                        {
+                            dias_global = dias_global + (divisao_first - count_dias_trabalhados);
+                        }
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
+                    }
+                }
+            }
+            count_dias_trabalhados = 0;
+        }
+
+        int sucessoes = 0;
+        bool contem;
+        for (int i = linha; i <= linha; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+                contem = false;
+                if (j == 0)
+                {
+                    if (ht->matriz_borda_s[i][1] == "None")
+                    {
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
+                        {
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_none.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Early")
+                    {
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
+                        {
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_early.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Day")
+                    {
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Late")
+                    {
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (ht->matriz_borda_s[i][1] == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
                 }
 
-                if (individuo_decodificado[i][j].first != turno_anterior && j != 0)
+                if (j != 0)
                 {
-                    for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
+                    if (individuo_decodificado[i][j - 1].first == "None")
                     {
-                        if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
                         {
-                            if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
                             {
-                                turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                contem = true;
+                                h = cn->vetor_none.size();
                             }
-                            if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Early")
+                    {
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
+                        {
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
                             {
-                                turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                contem = true;
+                                h = cn->vetor_early.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Day")
+                    {
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Late")
+                    {
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+                }
+            }
+        }
+
+        sucessoes = (sucessoes * 60);
+        requerimento_minimo = (requerimento_minimo * 60);
+        requerimento_otimo = (requerimento_otimo * 30);
+        requisicoes = (requisicoes * 10);
+        fim_semana_completo = (fim_semana_completo * 30);
+        dias_consecutivos = (dias_consecutivos * 30);
+        dias_folgas = (dias_folgas * 30);
+        turnos_consecutivos = (turnos_consecutivos * 15);
+        if (aux <= cn->num_semanas / 2)
+        {
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
+        }
+        else
+        {
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
+        }
+
+        custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
+        //cout << endl;
+        return custo_total;
+    }
+
+    int BRKGA::funcao_avaliacao_linha_coluna_2(vector<vector<pair<string, string>>> & individuo_decodificado, int linha, vector<int> colunas)
+    {
+
+        // int j = coluna;
+        int s7 = 0;
+        int aux = 0;
+        int count_dias_trabalhados = 0;
+        int dias_global = 0;
+
+        int count = 0;
+        int turnos_consecutivos = 0;
+        int count_folgas = 0;
+        int dias_folgas = 0;
+        string turno_anterior;
+        int count_dias_consecutivos = 0;
+        int dias_consecutivos = 0;
+        int count_fim_semana = 0;
+        int count_turnos = 0;
+        int custo_total;
+        int requisicoes = 0;
+        int fim_semana_completo = 0;
+        int requerimento_otimo = 0;
+        int requerimento_minimo = 0;
+        vector<int> turno_funcao;
+        turno_funcao = vector<int>(16); // coloca todas as posições do vetor com valor 0
+        for (int i = 0; i < 16; i++)
+        {
+            turno_funcao[i] = 0;
+        }
+
+        for (int i = 0; i < colunas.size(); i++)
+        {
+            for (int j = 0; j < cn->vetor_qualificacao.size(); j++)
+            {
+                if (individuo_decodificado[j][colunas[i]].first == "Early")
+                {
+                    if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
+                    {
+                        turno_funcao[0]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Nurse")
+                    {
+                        turno_funcao[1]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
+                    {
+                        turno_funcao[2]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Trainee")
+                    {
+                        turno_funcao[3]++;
+                    }
+                }
+
+                if (individuo_decodificado[j][colunas[i]].first == "Day")
+                {
+                    if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
+                    {
+                        turno_funcao[4]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Nurse")
+                    {
+                        turno_funcao[5]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
+                    {
+                        turno_funcao[6]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Trainee")
+                    {
+                        turno_funcao[7]++;
+                    }
+                }
+
+                if (individuo_decodificado[j][colunas[i]].first == "Late")
+                {
+                    if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
+                    {
+                        turno_funcao[8]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Nurse")
+                    {
+                        turno_funcao[9]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
+                    {
+                        turno_funcao[10]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Trainee")
+                    {
+                        turno_funcao[11]++;
+                    }
+                }
+                if (individuo_decodificado[j][colunas[i]].first == "Night")
+                {
+                    if (individuo_decodificado[j][colunas[i]].second == "HeadNurse")
+                    {
+                        turno_funcao[12]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Nurse")
+                    {
+                        turno_funcao[13]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Caretaker")
+                    {
+                        turno_funcao[14]++;
+                    }
+                    if (individuo_decodificado[j][colunas[i]].second == "Trainee")
+                    {
+                        turno_funcao[15]++;
+                    }
+                }
+            }
+
+            for (int h = 0; h < 16; h++)
+            {
+                //fazer aqui o somatorio
+                if (turno_funcao[h] < w0->matriz_requerimentos[h][colunas[i]].first)
+                {
+                    requerimento_minimo = (requerimento_minimo + (w0->matriz_requerimentos[h][colunas[i]].first - turno_funcao[h]));
+                }
+
+                if (turno_funcao[h] < w0->matriz_requerimentos[h][colunas[i]].second)
+                {
+                    requerimento_otimo = (requerimento_otimo + (w0->matriz_requerimentos[h][colunas[i]].second - turno_funcao[h]));
+                }
+                turno_funcao[h] = 0;
+            }
+        }
+
+        for (int h = 0; h < custom_out.size(); h++)
+        {
+            if (isdigit(custom_out[h]))
+            {
+                aux = custom_out[h] - '0';
+                aux = cn->num_semanas - aux;
+            }
+        }
+
+        for (int i = 0; i < w0->matriz_requisicoes.size(); i++)
+        {
+            if (w0->matriz_requisicoes[i][0] == linha)
+            {
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first != "None" && w0->matriz_requisicoes[i][1] == 0)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Early" && w0->matriz_requisicoes[i][1] == 1)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Day" && w0->matriz_requisicoes[i][1] == 2)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Late" && w0->matriz_requisicoes[i][1] == 3)
+                {
+                    requisicoes++;
+                }
+                if (individuo_decodificado[w0->matriz_requisicoes[i][0]][w0->matriz_requisicoes[i][2]].first == "Night" && w0->matriz_requisicoes[i][1] == 4)
+                {
+                    requisicoes++;
+                }
+            }
+        }
+
+        // restricoes s2 e s3 ---- s2-peso 30 resolvida ---- s3 peso 30 a ser resolvida
+        for (int i = linha; i <= linha; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+
+                if (j == 5)
+                {
+                    if (cn->vetor_qualificacao[i].contract == "FullTime" && cn->vetor_contratos[0].fim_semana_restricao == 1)
+                    {
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+
+                    if (cn->vetor_qualificacao[i].contract == "PartTime" && cn->vetor_contratos[1].fim_semana_restricao == 1)
+                    {
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+
+                    if (cn->vetor_qualificacao[i].contract == "HalfTime" && cn->vetor_contratos[2].fim_semana_restricao == 1)
+                    {
+
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+                    if (cn->vetor_qualificacao[i].contract == "20Percent" && cn->vetor_contratos.size() == 4 && cn->vetor_contratos[3].fim_semana_restricao == 1)
+                    {
+                        if (individuo_decodificado[i][j].first == "None" && individuo_decodificado[i][j + 1].first != "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                        if (individuo_decodificado[i][j].first != "None" && individuo_decodificado[i][j + 1].first == "None")
+                        {
+                            fim_semana_completo++;
+                        }
+                    }
+                }
+
+                if (individuo_decodificado[i][j].first == "None")
+                {
+                    count_folgas++;
+                    if (j == 0)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (ht->matriz_borda_fracas[i][4] < cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    count_folgas = count_folgas + ht->matriz_borda_fracas[i][4];
+                                }
+                                if (ht->matriz_borda_fracas[i][4] >= cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    count_folgas = count_folgas + cn->vetor_contratos[h].min_max[2].second;
+                                }
+                            }
+                        }
+
+                        // faz a subtração dos turnos que restarem da semana anterior
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].first)
+                                {
+                                    count_dias_consecutivos = ht->matriz_borda_fracas[i][3];
+                                }
+                                if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    count_dias_consecutivos = cn->vetor_contratos[h].min_max[1].second;
+                                }
                             }
                         }
                     }
-                    count_turnos = 1;
-                }
-                turno_anterior = individuo_decodificado[i][j].first;
-            }
 
-            if (individuo_decodificado[i][j].first == "None")
-            {
-                if (j == 0)
-                {
-                    if (ht->matriz_borda_fracas[i][2] > 0)
+                    if (count_dias_consecutivos > 0)
                     {
-                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
                         {
-                            if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
+                                if (count_dias_consecutivos < cn->vetor_contratos[h].min_max[1].first)
                                 {
-                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
+                                    dias_consecutivos = dias_consecutivos + (cn->vetor_contratos[h].min_max[1].first - count_dias_consecutivos);
+                                }
+                                if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
+                                }
+                                count_dias_consecutivos = 0;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (j == 6)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+
+                                if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
+                                    break;
                                 }
                             }
                         }
                     }
                 }
-                if (count_turnos > 0)
+
+                if (individuo_decodificado[i][j].first != "None")
                 {
-
-                    for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
+                    count_dias_consecutivos++;
+                    if (j == 0)
                     {
-                        if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                        count_folgas = ht->matriz_borda_fracas[i][4];
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
                         {
-
-                            if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                if (ht->matriz_borda_fracas[i][3] < cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    count_dias_consecutivos = count_dias_consecutivos + ht->matriz_borda_fracas[i][3];
+                                }
+                                if (ht->matriz_borda_fracas[i][3] >= cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    count_dias_consecutivos = count_dias_consecutivos + cn->vetor_contratos[h].min_max[1].second;
+                                }
                             }
-                            if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                        }
+                    }
+
+                    if (count_folgas > 0)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
                             {
-                                turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                if (count_folgas < cn->vetor_contratos[h].min_max[2].first)
+                                {
+                                    dias_folgas = dias_folgas + (cn->vetor_contratos[h].min_max[2].first - count_folgas);
+                                }
+                                if (count_folgas > cn->vetor_contratos[h].min_max[2].second)
+                                {
+                                    dias_folgas = dias_folgas + (count_folgas - cn->vetor_contratos[h].min_max[2].second);
+                                }
+                                count_folgas = 0;
+                            }
+                        }
+                    }
+
+                    if (j == 6)
+                    {
+                        for (int h = 0; h < cn->vetor_contratos.size(); h++)
+                        {
+                            if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[h].contrato)
+                            {
+                                if (count_dias_consecutivos > cn->vetor_contratos[h].min_max[1].second)
+                                {
+                                    dias_consecutivos = dias_consecutivos + (count_dias_consecutivos - cn->vetor_contratos[h].min_max[1].second);
+                                }
                             }
                         }
                     }
                 }
 
-                count_turnos = 0;
-                turno_anterior = individuo_decodificado[i][j].first;
+                if (individuo_decodificado[i][j].first != "None")
+                {
+                    count_dias_trabalhados++;
+                    if (j == 0)
+                    {
+                        count_turnos++;
+                        if (ht->matriz_borda_s[i][1] == individuo_decodificado[i][j].first)
+                        {
+                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                            {
+                                if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                                {
+                                    if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        count_turnos = count_turnos + ht->matriz_borda_fracas[i][2];
+                                    }
+                                    if (ht->matriz_borda_fracas[i][2] >= cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        count_turnos = count_turnos + cn->vetor_sucessoes[h].x.second;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ht->matriz_borda_s[i][1] != individuo_decodificado[i][j].first)
+                        {
+                            if (ht->matriz_borda_fracas[i][2] > 0)
+                            {
+                                for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                                {
+                                    if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                                    {
+                                        if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
+                                        {
+                                            turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (individuo_decodificado[i][j].first == turno_anterior)
+                    {
+                        count_turnos++;
+                        if (j == 6)
+                        {
+                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                            {
+                                if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                                {
+                                    if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                                    {
+                                        turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (individuo_decodificado[i][j].first != turno_anterior && j != 0)
+                    {
+                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
+                        {
+                            if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                            {
+                                if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                }
+                                if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                }
+                            }
+                        }
+                        count_turnos = 1;
+                    }
+                    turno_anterior = individuo_decodificado[i][j].first;
+                }
+
+                if (individuo_decodificado[i][j].first == "None")
+                {
+                    if (j == 0)
+                    {
+                        if (ht->matriz_borda_fracas[i][2] > 0)
+                        {
+                            for (int h = 0; h < cn->vetor_sucessoes.size(); h++)
+                            {
+                                if (cn->vetor_sucessoes[h].turno == ht->matriz_borda_s[i][1])
+                                {
+                                    if (ht->matriz_borda_fracas[i][2] < cn->vetor_sucessoes[h].x.first)
+                                    {
+                                        turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - ht->matriz_borda_fracas[i][2]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (count_turnos > 0)
+                    {
+
+                        for (int h = 0; h < cn->vetor_sucessoes.size(); h++) // se o enfermeiro trabalhar e o historico for menos do que o minimo
+                        {
+                            if (cn->vetor_sucessoes[h].turno == turno_anterior)
+                            {
+
+                                if (count_turnos < cn->vetor_sucessoes[h].x.first)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (cn->vetor_sucessoes[h].x.first - count_turnos);
+                                }
+                                if (count_turnos > cn->vetor_sucessoes[h].x.second)
+                                {
+                                    turnos_consecutivos = turnos_consecutivos + (count_turnos - cn->vetor_sucessoes[h].x.second);
+                                }
+                            }
+                        }
+                    }
+
+                    count_turnos = 0;
+                    turno_anterior = individuo_decodificado[i][j].first;
+                }
             }
+            count_dias_consecutivos = 0;
+            count_folgas = 0;
+            count_turnos = 0;
+            turno_anterior.erase();
+            //restrição turnos consecutivos
+
+            //restriçao s6
+
+            if (semana_1 == 0)
+            {
+
+                for (int t = 0; t < cn->vetor_contratos.size(); t++)
+                {
+                    if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                    {
+                        if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                        {
+
+                            if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                            {
+                                s7++;
+                            }
+                        }
+
+                        int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
+                        int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux));
+
+                        if (count_dias_trabalhados < divisao_first)
+                        {
+                            dias_global = dias_global + (divisao_first - count_dias_trabalhados);
+                        }
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (semana_1 == 1)
+            {
+
+                for (int t = 0; t < cn->vetor_contratos.size(); t++)
+                {
+                    if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                    {
+
+                        if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                        {
+                            //s7++;
+                            if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                            {
+                                s7++;
+                            }
+                        }
+
+                        int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
+                        int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas));
+
+                        if (count_dias_trabalhados < divisao_first)
+                        {
+                            dias_global = dias_global + (divisao_first - count_dias_trabalhados);
+                        }
+                        if (count_dias_trabalhados > divisao_second)
+                        {
+                            dias_global = dias_global + (count_dias_trabalhados - divisao_second);
+                        }
+                        break;
+                    }
+                }
+            }
+            count_dias_trabalhados = 0;
         }
-        count_dias_consecutivos = 0;
-        count_folgas = 0;
-        count_turnos = 0;
-        turno_anterior.erase();
-        //restrição turnos consecutivos
 
-        //restriçao s6
-
-        if (semana_1 == 0)
+        int sucessoes = 0;
+        bool contem;
+        for (int i = linha; i <= linha; i++)
         {
-
-            for (int t = 0; t < cn->vetor_contratos.size(); t++)
+            for (int j = 0; j < 7; j++)
             {
-                if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
+                contem = false;
+                if (j == 0)
                 {
-                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
+                    if (ht->matriz_borda_s[i][1] == "None")
                     {
-                        
-                        if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
                         {
-                            s7++;
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_none.size();
+                            }
                         }
+                        if (contem == false)
+                            sucessoes++;
                     }
 
-                    
-                    int divisao_first = floor(double(cus->dias_trabalhados[i].first / aux));
-                    int divisao_second = ceil(double(cus->dias_trabalhados[i].second / aux) );
+                    if (ht->matriz_borda_s[i][1] == "Early")
+                    {
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
+                        {
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_early.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
 
-                    if (count_dias_trabalhados < divisao_first)
+                    if (ht->matriz_borda_s[i][1] == "Day")
                     {
-                        dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
                     }
-                    if (count_dias_trabalhados > divisao_second)
+
+                    if (ht->matriz_borda_s[i][1] == "Late")
                     {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                        
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
                     }
-                    break;
+
+                    if (ht->matriz_borda_s[i][1] == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+                }
+
+                if (j != 0)
+                {
+                    if (individuo_decodificado[i][j - 1].first == "None")
+                    {
+                        for (int h = 0; h < cn->vetor_none.size(); h++)
+                        {
+                            if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_none.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Early")
+                    {
+                        for (int h = 0; h < cn->vetor_early.size(); h++)
+                        {
+                            if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_early.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Day")
+                    {
+                        for (int h = 0; h < cn->vetor_day.size(); h++)
+                        {
+                            if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_day.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Late")
+                    {
+                        for (int h = 0; h < cn->vetor_late.size(); h++)
+                        {
+                            if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_late.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
+
+                    if (individuo_decodificado[i][j - 1].first == "Night")
+                    {
+                        for (int h = 0; h < cn->vetor_night.size(); h++)
+                        {
+                            if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
+                            {
+                                contem = true;
+                                h = cn->vetor_night.size();
+                            }
+                        }
+                        if (contem == false)
+                            sucessoes++;
+                    }
                 }
             }
         }
 
-        if (semana_1 == 1)
+        sucessoes = (sucessoes * 60);
+        requerimento_minimo = (requerimento_minimo * 60);
+        requerimento_otimo = (requerimento_otimo * 30);
+        requisicoes = (requisicoes * 10);
+        fim_semana_completo = (fim_semana_completo * 30);
+        dias_consecutivos = (dias_consecutivos * 30);
+        dias_folgas = (dias_folgas * 30);
+        turnos_consecutivos = (turnos_consecutivos * 15);
+        if (aux <= cn->num_semanas / 2)
         {
-
-            for (int t = 0; t < cn->vetor_contratos.size(); t++)
-            {
-                if (cn->vetor_qualificacao[i].contract == cn->vetor_contratos[t].contrato)
-                {
-
-                    if (individuo_decodificado[i][5].first != "None" || individuo_decodificado[i][6].first != "None")
-                    {
-                        //s7++;
-                        if (ht->matriz_borda_fracas[i][1] + 1 > cn->vetor_contratos[t].fim_semana)
-                        {
-                            s7++;
-                        }
-                    }
-                   
-                    int divisao_first = floor(double(cn->vetor_contratos[t].min_max[0].first / cn->num_semanas));
-                    int divisao_second = ceil(double(cn->vetor_contratos[t].min_max[0].second / cn->num_semanas) );
-
-                    if (count_dias_trabalhados < divisao_first)
-                    {
-                        dias_global = dias_global + (divisao_first - count_dias_trabalhados);
-                        
-                    }
-                    if (count_dias_trabalhados > divisao_second)
-                    {
-                        dias_global = dias_global + (count_dias_trabalhados - divisao_second);
-                        
-                    }
-                    break;
-                }
-            }
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
         }
-        count_dias_trabalhados = 0;
-    }
-
-    int sucessoes = 0;
-    bool contem;
-    for (int i = linha; i <= linha; i++)
-    {
-        for (int j = 0; j < 7; j++)
+        else
         {
-            contem = false;
-            if (j == 0)
-            {
-                if (ht->matriz_borda_s[i][1] == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (ht->matriz_borda_s[i][1] == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
-
-            if (j != 0)
-            {
-                if (individuo_decodificado[i][j - 1].first == "None")
-                {
-                    for (int h = 0; h < cn->vetor_none.size(); h++)
-                    {
-                        if (cn->vetor_none[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_none.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Early")
-                {
-                    for (int h = 0; h < cn->vetor_early.size(); h++)
-                    {
-                        if (cn->vetor_early[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_early.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Day")
-                {
-                    for (int h = 0; h < cn->vetor_day.size(); h++)
-                    {
-                        if (cn->vetor_day[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_day.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Late")
-                {
-                    for (int h = 0; h < cn->vetor_late.size(); h++)
-                    {
-                        if (cn->vetor_late[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_late.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-
-                if (individuo_decodificado[i][j - 1].first == "Night")
-                {
-                    for (int h = 0; h < cn->vetor_night.size(); h++)
-                    {
-                        if (cn->vetor_night[h] == individuo_decodificado[i][j].first)
-                        {
-                            contem = true;
-                            h = cn->vetor_night.size();
-                        }
-                    }
-                    if (contem == false)
-                        sucessoes++;
-                }
-            }
+            s7 = (s7 * 30);
+            dias_global = (dias_global * 20);
         }
-    }
 
-    
-    sucessoes = (sucessoes * 60);
-    requerimento_minimo = (requerimento_minimo * 60);
-    requerimento_otimo = (requerimento_otimo * 30);
-    requisicoes = (requisicoes * 10);
-    fim_semana_completo = (fim_semana_completo * 30);
-    dias_consecutivos = (dias_consecutivos * 30);
-    dias_folgas = (dias_folgas * 30);
-    turnos_consecutivos = (turnos_consecutivos * 15);
-    if (aux <= cn->num_semanas/2)
-    {
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-    else{
-        s7 = (s7 * 30);
-        dias_global = (dias_global * 20);
-    }
-        
- 
+        custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
 
-    custo_total = s7 + sucessoes + requerimento_minimo + requerimento_otimo + requisicoes + fim_semana_completo + dias_consecutivos + dias_folgas + turnos_consecutivos + dias_global;
-    
-    return custo_total;
-}
+        return custo_total;
+    }
